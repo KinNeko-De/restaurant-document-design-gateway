@@ -17,12 +17,12 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type generatePreviewRequest struct {
+type GeneratePreviewRequest struct {
 	RequestId string `json:"requestId"`
 }
 
 func GeneratePreview(context *gin.Context) {
-	var request generatePreviewRequest
+	var request GeneratePreviewRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "request can not be parsed"})
 		return
