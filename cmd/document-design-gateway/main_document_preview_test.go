@@ -14,44 +14,41 @@ import (
 const uri string = "/document/preview"
 
 func TestDocumentPreview_Request_Missing(t *testing.T) {
-	router := setupRouter()
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, uri, nil)
-	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
+	request, _ := http.NewRequest(http.MethodPost, uri, nil)
+
+	response := SendRequestToSut(request)
+
+	assert.Equal(t, http.StatusBadRequest, response.Code)
 }
 
 func TestDocumentPreview_RequestId_Empty(t *testing.T) {
 	requestIdParameter := "requestId"
 	requestIdValue := ""
-	request := createRequest(requestIdParameter, requestIdValue)
+	requestJson := createRequest(requestIdParameter, requestIdValue)
+	request, _ := http.NewRequest(http.MethodPost, uri, strings.NewReader(requestJson))
 
-	router := setupRouter()
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, uri, strings.NewReader(request))
-	router.ServeHTTP(w, req)
+	response := SendRequestToSut(request)
 
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-	response := w.Body.String();
-	assert.Contains(t, response, requestIdParameter)
-	assert.Contains(t, response, requestIdValue)
+	assert.Equal(t, http.StatusBadRequest, response.Code)
+	responseBody := response.Body.String();
+	assert.Contains(t, responseBody, requestIdParameter)
+	assert.Contains(t, responseBody, requestIdValue)
 }
 
 func TestDocumentPreview_RequestId_Invalid(t *testing.T) {
 	requestIdParameter := "requestId"
 	requestIdValue := "XXXX"
-	request := createRequest(requestIdParameter, requestIdValue)
+	requestJson := createRequest(requestIdParameter, requestIdValue)
+	request, _ := http.NewRequest(http.MethodPost, uri, strings.NewReader(requestJson))
+	
+	response := SendRequestToSut(request)
 
-	router := setupRouter()
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, uri, strings.NewReader(request))
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-	response := w.Body.String();
-	assert.Contains(t, response, requestIdParameter)
-	assert.Contains(t, response, requestIdValue)
+	assert.Equal(t, http.StatusBadRequest, response.Code)
+	responseBody := response.Body.String();
+	assert.Contains(t, responseBody, requestIdParameter)
+	assert.Contains(t, responseBody, requestIdValue)
 }
+
 
 func TestGeneratePreview(t *testing.T) {
 	t.Skip("test is not working yet.")
