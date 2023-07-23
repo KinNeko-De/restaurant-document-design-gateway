@@ -1,0 +1,18 @@
+version: '3.9'
+name: restaurant-document-design-gateway
+
+services:
+  restaurant-document-design-gateway:
+    image: restaurant-document-design-gateway
+    networks:
+      - project-network
+    container_name: restaurant-document-design-gateway
+    build:
+      dockerfile: ../../build/dockerfile
+    ports:
+      - "42090:8080"
+
+networks:
+  project-network:
+    name: restaurant
+    external: true
