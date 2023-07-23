@@ -7,7 +7,7 @@ on:
 env:
   MAJOR_MINOR_PATCH: 0.1.0
   GIN_MODE: release
-  MAIN_PACKAGE: 'cmd/document-design/gateway/main.go'
+  MAIN_PACKAGE: 'cmd/document-design-gateway/main.go'
 
 concurrency: ci-${{ github.ref }}
 
