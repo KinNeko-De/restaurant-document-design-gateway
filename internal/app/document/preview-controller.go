@@ -29,7 +29,7 @@ func GeneratePreview(context *gin.Context) {
 	}
 	requestId, err := uuid.Parse(request.RequestId)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "requestId '" + request.RequestId + "' is not a valid uuid. expect uuid in the following format: 550e8400-e29b-11d4-a716-446655440000"})
 		return
 	}
 
