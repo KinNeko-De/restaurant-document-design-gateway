@@ -7,6 +7,7 @@ on:
 env:
   MAJOR_MINOR_PATCH: 0.1.0
   GIN_MODE: release
+  MAIN_PACKAGE: 'cmd/document-design/gateway/main.go'
 
 concurrency: ci-${{ github.ref }}
 
@@ -68,7 +69,7 @@ jobs:
           tee build/version.txt <<< ${{ steps.semantic_version.outputs.semantic_version }}
       - name: "Build"
         run: |
-          go build ./...
+          go build ${{ env.MAIN_PACKAGE }} -o bin/app
       - name: "Test"
         run: |
           go test ./... -race -coverprofile=coverage.out
