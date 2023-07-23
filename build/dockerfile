@@ -1,0 +1,25 @@
+FROM debian:bookwork-slim AS base
+
+RUN apt-get update && apt-get upgrade -y
+
+EXPOSE 8080
+
+ARG GROUP_NAME=appgroup
+ARG GROUP_UID=1001
+ARG USER_NAME=appuser
+ARG USER_UID=1001
+
+# Create a group as system group
+RUN groupadd --gid ${GROUP_UID} ${GROUP_NAME} --system\
+# Create a non root user as system user belonging to that group.
+  && useradd --uid $USER_UID --gid ${GROUP_UID} --system --shell /bin/sh ${USER_NAME}
+
+USER ${USER_UID}
+
+WORKDIR /app
+
+COPY /bin/app .
+
+RUN chmod +x /app/app
+
+CMD ["/app/app"]
