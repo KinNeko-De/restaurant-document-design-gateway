@@ -6,6 +6,7 @@ on:
 
 env:
   MAJOR_MINOR_PATCH: 0.1.0
+  GIN_MODE: release
 
 concurrency: ci-${{ github.ref }}
 
