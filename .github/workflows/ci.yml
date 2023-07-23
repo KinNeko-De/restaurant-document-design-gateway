@@ -69,7 +69,7 @@ jobs:
           tee build/version.txt <<< ${{ steps.semantic_version.outputs.semantic_version }}
       - name: "Build"
         run: |
-          go build ${{ env.MAIN_PACKAGE }} -o bin/app
+          go build ./${{ env.MAIN_PACKAGE }} -o bin/app
       - name: "Test"
         run: |
           go test ./... -race -coverprofile=coverage.out
