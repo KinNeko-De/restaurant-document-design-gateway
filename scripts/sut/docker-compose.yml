@@ -11,6 +11,9 @@ services:
       dockerfile: ../../build/dockerfile
     ports:
       - "42090:8080"
+    environment:
+    - DOCUMENTGENERATESERVICE_HOST=restaurant-document-generate-svc
+    - DOCUMENTGENERATESERVICE_PORT=3110
 
 networks:
   project-network:

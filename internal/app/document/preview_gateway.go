@@ -17,6 +17,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var (
+	ApiDocumentService string = "SetByMain"
+)
+
 type GeneratePreviewRequest struct {
 	RequestId string `json:"requestId"`
 }

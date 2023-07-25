@@ -8,6 +8,10 @@
           "mode": "debug",
           "program": "${workspaceFolder}/cmd/document-design-gateway/main.go",
           "showLog": true,
+          "env": {
+            "DOCUMENTGENERATESERVICE_HOST" : "localhost",
+            "DOCUMENTGENERATESERVICE_PORT" : "42984",
+          }
       },
   ]
 }
