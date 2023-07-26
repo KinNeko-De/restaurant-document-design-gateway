@@ -37,7 +37,7 @@ func GeneratePreview(context *gin.Context) {
 		return
 	}
 
-	c, dialError := grpc.Dial("localhost:5649", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	c, dialError := grpc.Dial(ApiDocumentService, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if dialError != nil {
 		context.JSON(http.StatusServiceUnavailable, gin.H{"error": "service not available. please try again later"})
 		return
