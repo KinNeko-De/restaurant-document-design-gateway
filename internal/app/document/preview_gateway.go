@@ -7,14 +7,16 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
-	apiDocumentService "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
+	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -43,11 +45,54 @@ func GeneratePreview(context *gin.Context) {
 		return
 	}
 
-	client := apiDocumentService.NewDocumentServiceClient(c)
+	client := apiRestaurantDocument.NewDocumentServiceClient(c)
 	requestUuid, _ := apiProtobuf.ToProtobuf(requestId)
-	previewRequest := apiDocumentService.GeneratePreviewRequest{
+	previewRequest := apiRestaurantDocument.GeneratePreviewRequest{
 		RequestId: requestUuid,
-
+		RequestedDocument: &apiRestaurantDocument.RequestedDocument{
+			Type: &apiRestaurantDocument.RequestedDocument_Invoice{
+				Invoice: &apiRestaurantDocument.Invoice{
+					DeliveredOn:  timestamppb.New(time.Date(2020, time.April, 13, 0, 0, 0, 0, time.UTC)),
+					CurrencyCode: "EUR",
+					Recipient: &apiRestaurantDocument.Invoice_Recipient{
+						Name:     "Max Mustermann",
+						Street:   "Musterstraße 17",
+						City:     "Musterstadt",
+						PostCode: "12345",
+						Country:  "DE",
+					},
+					Items: []*apiRestaurantDocument.Invoice_Item{
+						{
+							Description: "Spitzenunterwäsche\r\nANS 23054303053",
+							Quantity:    2,
+							NetAmount:   &apiProtobuf.Decimal{Value: "3.35"},
+							Taxation:    &apiProtobuf.Decimal{Value: "19"},
+							TotalAmount: &apiProtobuf.Decimal{Value: "3.99"},
+							Sum:         &apiProtobuf.Decimal{Value: "7.98"},
+						},
+						{
+							Description: "Schlabberhose (10% reduziert)\r\nANS 606406540",
+							Quantity:    1,
+							NetAmount:   &apiProtobuf.Decimal{Value: "9.07"},
+							Taxation:    &apiProtobuf.Decimal{Value: "19"},
+							TotalAmount: &apiProtobuf.Decimal{Value: "10.79"},
+							Sum:         &apiProtobuf.Decimal{Value: "10.79"},
+						},
+						{
+							Description: "Versandkosten",
+							Quantity:    1,
+							NetAmount:   &apiProtobuf.Decimal{Value: "0.00"},
+							Taxation:    &apiProtobuf.Decimal{Value: "0"},
+							TotalAmount: &apiProtobuf.Decimal{Value: "0.00"},
+							Sum:         &apiProtobuf.Decimal{Value: "0.00"},
+						},
+					},
+				},
+			},
+			OutputFormats: []apiRestaurantDocument.RequestedDocument_OutputFormat{
+				apiRestaurantDocument.RequestedDocument_OUTPUT_FORMAT_PDF,
+			},
+		},
 	}
 
 	callContext, cancelFunc := grpccontext.WithDeadline(grpccontext.Background(), timeout.GetDefaultDeadline())
@@ -65,7 +110,7 @@ func GeneratePreview(context *gin.Context) {
 		return
 	}
 
-	_, ok := firstResponse.File.(*apiDocumentService.GeneratePreviewResponse_Metadata)
+	_, ok := firstResponse.File.(*apiRestaurantDocument.GeneratePreviewResponse_Metadata)
 	if !ok {
 		context.AbortWithError(http.StatusInternalServerError, errors.New("FileCase of type 'apidocument.DownloadDocumentResponse_Metadata' expected. Actual value is "+reflect.TypeOf(firstResponse.File).String()+"."))
 		return
@@ -98,12 +143,12 @@ func GeneratePreview(context *gin.Context) {
 	}
 }
 
-func somethingElseThanChunkWasSent(current *apiDocumentService.GeneratePreviewResponse) bool {
-	_, ok := current.File.(*apiDocumentService.GeneratePreviewResponse_Chunk)
+func somethingElseThanChunkWasSent(current *apiRestaurantDocument.GeneratePreviewResponse) bool {
+	_, ok := current.File.(*apiRestaurantDocument.GeneratePreviewResponse_Chunk)
 	return !ok
 }
 
-func readNextResponse(stream apiDocumentService.DocumentService_GeneratePreviewClient) (*apiDocumentService.GeneratePreviewResponse, bool, error) {
+func readNextResponse(stream apiRestaurantDocument.DocumentService_GeneratePreviewClient) (*apiRestaurantDocument.GeneratePreviewResponse, bool, error) {
 	current, err := stream.Recv()
 
 	if err == io.EOF {
