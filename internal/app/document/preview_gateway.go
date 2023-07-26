@@ -95,7 +95,7 @@ func GeneratePreview(context *gin.Context) {
 		},
 	}
 
-	callContext, cancelFunc := grpccontext.WithDeadline(grpccontext.Background(), timeout.GetDefaultDeadline())
+	callContext, cancelFunc := grpccontext.WithDeadline(grpccontext.Background(), timeout.GetDeadline(timeout.LongDeadline))
 	defer cancelFunc()
 
 	stream, clientErr := client.GeneratePreview(callContext, &previewRequest)
