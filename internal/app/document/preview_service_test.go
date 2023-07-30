@@ -1,11 +1,13 @@
 package document
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	v1 "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/ginfixture"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/mocks"
 	"github.com/stretchr/testify/assert"
@@ -44,6 +46,11 @@ func TestGeneratePreview_Valid(t *testing.T) {
 	mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
 	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
 	mockClient.SetupGeneratePreview(mockStream)
+	mockStream.EXPECT().Recv().Return(&v1.GeneratePreviewResponse{ File: &v1.GeneratePreviewResponse_Metadata{ Metadata: &v1.GeneratedFileMetadata{}}}, nil).Once()
+	mockStream.EXPECT().Recv().Return(&v1.GeneratePreviewResponse{ File: &v1.GeneratePreviewResponse_Chunk{ Chunk: make([]byte, 10)}}, nil).Once()
+	mockStream.EXPECT().Recv().Return(nil, io.EOF).Once()
+	mockStream.EXPECT().CloseSend().Return(nil).Once()
+
 
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
@@ -52,7 +59,7 @@ func TestGeneratePreview_Valid(t *testing.T) {
 
 	GeneratePreview(context)
 
-	assert.EqualValues(t, http.StatusServiceUnavailable, response.Code)
+	assert.EqualValues(t, http.StatusCreated, response.Code)
 }
 
 
