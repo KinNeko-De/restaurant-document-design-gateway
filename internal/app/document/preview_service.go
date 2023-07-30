@@ -38,6 +38,7 @@ func GeneratePreview(context *gin.Context) {
 	client, dialError := documentServiceGateway.CreateDocumentServiceClient()
 	if dialError != nil {
 		context.JSON(http.StatusServiceUnavailable, gin.H{"error": "service not available. please try again later"})
+		return
 	}
 
 	callContext, cancelFunc := grpccontext.WithDeadline(grpccontext.Background(), timeout.GetDeadline(timeout.LongDeadline))
