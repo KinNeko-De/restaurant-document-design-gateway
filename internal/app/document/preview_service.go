@@ -155,3 +155,4 @@ func readNextResponse(stream apiRestaurantDocument.DocumentService_GeneratePrevi
 	}
 	return current, false, nil
 }
+// Do not remove last empty line : https://github.com/golang/go/issues/58370

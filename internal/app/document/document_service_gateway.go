@@ -54,3 +54,4 @@ func loadApiDocumentServiceConfig() (string, error){
 
 	return host + ":" + port, nil
 }
+// Do not remove last empty line : https://github.com/golang/go/issues/58370
