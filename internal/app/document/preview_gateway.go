@@ -126,7 +126,7 @@ func GeneratePreview(context *gin.Context) {
 			return
 		}
 		if requestErr != nil {
-			context.AbortWithError(http.StatusServiceUnavailable, requestErr)
+			context.AbortWithError(http.StatusInternalServerError, requestErr)
 			return
 		}
 		if somethingElseThanChunkWasSent(current) {
