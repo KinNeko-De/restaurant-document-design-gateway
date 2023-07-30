@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
@@ -24,18 +23,12 @@ var (
 )
 
 type GeneratePreviewRequest struct {
-	RequestId string `json:"requestId"`
 }
 
 func GeneratePreview(context *gin.Context) {
 	var request GeneratePreviewRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "request can not be parsed"})
-		return
-	}
-	requestId, err := uuid.Parse(request.RequestId)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "requestId '" + request.RequestId + "' is not a valid uuid. expect uuid in the following format: 550e8400-e29b-11d4-a716-446655440000"})
 		return
 	}
 
@@ -46,9 +39,7 @@ func GeneratePreview(context *gin.Context) {
 	}
 
 	client := apiRestaurantDocument.NewDocumentServiceClient(c)
-	requestUuid, _ := apiProtobuf.ToProtobuf(requestId)
 	previewRequest := apiRestaurantDocument.GeneratePreviewRequest{
-		RequestId: requestUuid,
 		RequestedDocument: &apiRestaurantDocument.RequestedDocument{
 			Type: &apiRestaurantDocument.RequestedDocument_Invoice{
 				Invoice: &apiRestaurantDocument.Invoice{
@@ -88,9 +79,6 @@ func GeneratePreview(context *gin.Context) {
 						},
 					},
 				},
-			},
-			OutputFormats: []apiRestaurantDocument.RequestedDocument_OutputFormat{
-				apiRestaurantDocument.RequestedDocument_OUTPUT_FORMAT_PDF,
 			},
 		},
 	}
