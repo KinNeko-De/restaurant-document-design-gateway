@@ -13,14 +13,16 @@ import (
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	ApiDocumentService string = "SetByMain"
+	documentServiceGateway DocumentServiceGateway;
 )
+
+func init() {
+	documentServiceGateway = DocumentServiceGateKeeper{}
+}
 
 type GeneratePreviewRequest struct {
 }
@@ -31,62 +33,16 @@ func GeneratePreview(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "request can not be parsed"})
 		return
 	}
+	previewRequest := generateTestDocument()
 
-	c, dialError := grpc.Dial(ApiDocumentService, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, dialError := documentServiceGateway.CreateDocumentServiceClient()
 	if dialError != nil {
 		context.JSON(http.StatusServiceUnavailable, gin.H{"error": "service not available. please try again later"})
-		return
-	}
-
-	client := apiRestaurantDocument.NewDocumentServiceClient(c)
-	previewRequest := apiRestaurantDocument.GeneratePreviewRequest{
-		RequestedDocument: &apiRestaurantDocument.RequestedDocument{
-			Type: &apiRestaurantDocument.RequestedDocument_Invoice{
-				Invoice: &apiRestaurantDocument.Invoice{
-					DeliveredOn:  timestamppb.New(time.Date(2020, time.April, 13, 0, 0, 0, 0, time.UTC)),
-					CurrencyCode: "EUR",
-					Recipient: &apiRestaurantDocument.Invoice_Recipient{
-						Name:     "Max Mustermann",
-						Street:   "Musterstraße 17",
-						City:     "Musterstadt",
-						PostCode: "12345",
-						Country:  "DE",
-					},
-					Items: []*apiRestaurantDocument.Invoice_Item{
-						{
-							Description: "Spitzenunterwäsche\r\nANS 23054303053",
-							Quantity:    2,
-							NetAmount:   &apiProtobuf.Decimal{Value: "3.35"},
-							Taxation:    &apiProtobuf.Decimal{Value: "19"},
-							TotalAmount: &apiProtobuf.Decimal{Value: "3.99"},
-							Sum:         &apiProtobuf.Decimal{Value: "7.98"},
-						},
-						{
-							Description: "Schlabberhose (10% reduziert)\r\nANS 606406540",
-							Quantity:    1,
-							NetAmount:   &apiProtobuf.Decimal{Value: "9.07"},
-							Taxation:    &apiProtobuf.Decimal{Value: "19"},
-							TotalAmount: &apiProtobuf.Decimal{Value: "10.79"},
-							Sum:         &apiProtobuf.Decimal{Value: "10.79"},
-						},
-						{
-							Description: "Versandkosten",
-							Quantity:    1,
-							NetAmount:   &apiProtobuf.Decimal{Value: "0.00"},
-							Taxation:    &apiProtobuf.Decimal{Value: "0"},
-							TotalAmount: &apiProtobuf.Decimal{Value: "0.00"},
-							Sum:         &apiProtobuf.Decimal{Value: "0.00"},
-						},
-					},
-				},
-			},
-		},
 	}
 
 	callContext, cancelFunc := grpccontext.WithDeadline(grpccontext.Background(), timeout.GetDeadline(timeout.LongDeadline))
 	defer cancelFunc()
-
-	stream, clientErr := client.GeneratePreview(callContext, &previewRequest)
+	stream, clientErr := client.GeneratePreview(callContext, previewRequest)
 	if clientErr != nil {
 		context.AbortWithError(http.StatusServiceUnavailable, clientErr)
 		return
@@ -129,6 +85,53 @@ func GeneratePreview(context *gin.Context) {
 			return
 		}
 	}
+}
+
+func generateTestDocument() *apiRestaurantDocument.GeneratePreviewRequest {
+	previewRequest := &apiRestaurantDocument.GeneratePreviewRequest{
+		RequestedDocument: &apiRestaurantDocument.RequestedDocument{
+			Type: &apiRestaurantDocument.RequestedDocument_Invoice{
+				Invoice: &apiRestaurantDocument.Invoice{
+					DeliveredOn:  timestamppb.New(time.Date(2020, time.April, 13, 0, 0, 0, 0, time.UTC)),
+					CurrencyCode: "EUR",
+					Recipient: &apiRestaurantDocument.Invoice_Recipient{
+						Name:     "Max Mustermann",
+						Street:   "Musterstraße 17",
+						City:     "Musterstadt",
+						PostCode: "12345",
+						Country:  "DE",
+					},
+					Items: []*apiRestaurantDocument.Invoice_Item{
+						{
+							Description: "Spitzenunterwäsche\r\nANS 23054303053",
+							Quantity:    2,
+							NetAmount:   &apiProtobuf.Decimal{Value: "3.35"},
+							Taxation:    &apiProtobuf.Decimal{Value: "19"},
+							TotalAmount: &apiProtobuf.Decimal{Value: "3.99"},
+							Sum:         &apiProtobuf.Decimal{Value: "7.98"},
+						},
+						{
+							Description: "Schlabberhose (10% reduziert)\r\nANS 606406540",
+							Quantity:    1,
+							NetAmount:   &apiProtobuf.Decimal{Value: "9.07"},
+							Taxation:    &apiProtobuf.Decimal{Value: "19"},
+							TotalAmount: &apiProtobuf.Decimal{Value: "10.79"},
+							Sum:         &apiProtobuf.Decimal{Value: "10.79"},
+						},
+						{
+							Description: "Versandkosten",
+							Quantity:    1,
+							NetAmount:   &apiProtobuf.Decimal{Value: "0.00"},
+							Taxation:    &apiProtobuf.Decimal{Value: "0"},
+							TotalAmount: &apiProtobuf.Decimal{Value: "0.00"},
+							Sum:         &apiProtobuf.Decimal{Value: "0.00"},
+						},
+					},
+				},
+			},
+		},
+	}
+	return previewRequest
 }
 
 func somethingElseThanChunkWasSent(current *apiRestaurantDocument.GeneratePreviewResponse) bool {

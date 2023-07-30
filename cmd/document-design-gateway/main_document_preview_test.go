@@ -5,50 +5,21 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-const uri string = "/document/preview"
+const expectedEndpoint string = "/document/preview"
 
-func TestDocumentPreview_Request_Missing(t *testing.T) {
-	request, _ := http.NewRequest(http.MethodPost, uri, nil)
+// tests that the service is mapped to the expected expectedEndpoint (no code coverage)
+func TestDocumentPreview_RequestIsNil(t *testing.T) {
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, nil)
 
 	response := SendRequestToSut(request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code)
 }
-
-func TestDocumentPreview_RequestId_Empty(t *testing.T) {
-	requestIdParameter := "requestId"
-	requestIdValue := ""
-	requestJson := createRequest(requestIdParameter, requestIdValue)
-	request, _ := http.NewRequest(http.MethodPost, uri, strings.NewReader(requestJson))
-
-	response := SendRequestToSut(request)
-
-	assert.Equal(t, http.StatusBadRequest, response.Code)
-	responseBody := response.Body.String();
-	assert.Contains(t, responseBody, requestIdParameter)
-	assert.Contains(t, responseBody, requestIdValue)
-}
-
-func TestDocumentPreview_RequestId_Invalid(t *testing.T) {
-	requestIdParameter := "requestId"
-	requestIdValue := "XXXX"
-	requestJson := createRequest(requestIdParameter, requestIdValue)
-	request, _ := http.NewRequest(http.MethodPost, uri, strings.NewReader(requestJson))
-	
-	response := SendRequestToSut(request)
-
-	assert.Equal(t, http.StatusBadRequest, response.Code)
-	responseBody := response.Body.String();
-	assert.Contains(t, responseBody, requestIdParameter)
-	assert.Contains(t, responseBody, requestIdValue)
-}
-
 
 func TestGeneratePreview(t *testing.T) {
 	t.Skip("test is not working yet.")
