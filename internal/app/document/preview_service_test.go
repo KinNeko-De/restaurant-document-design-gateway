@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/testfixture"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/ginfixture"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGeneratePreview_RequestIsNil(t *testing.T) {
 	response := httptest.NewRecorder()
-	context := testfixture.CreateGinContext(response);
+	context := ginfixture.CreateContext(response);
 	GeneratePreview(context)
 	
 	assert.EqualValues(t, http.StatusBadRequest, response.Code)

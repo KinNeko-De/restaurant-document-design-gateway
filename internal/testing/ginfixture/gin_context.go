@@ -1,4 +1,4 @@
-package testfixture
+package ginfixture
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateGinContext(response *httptest.ResponseRecorder) *gin.Context {
+func CreateContext(response *httptest.ResponseRecorder) *gin.Context {
 	gin.SetMode(gin.TestMode)
 	ctx, _ := gin.CreateTestContext(response)
 	ctx.Request = &http.Request{
