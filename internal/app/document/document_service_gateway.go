@@ -37,7 +37,7 @@ func (DocumentServiceGateKeeper) CreateDocumentServiceClient() (apiRestaurantDoc
 func readConfig() {
 	connection, err := loadApiDocumentServiceConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	apiDocumentServiceUrl = connection
 }
