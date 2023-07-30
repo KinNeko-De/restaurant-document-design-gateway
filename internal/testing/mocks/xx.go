@@ -1,5 +1,0 @@
-package mocks
-
-func IamThere() {
-
-}

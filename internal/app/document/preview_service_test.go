@@ -1,7 +1,6 @@
 package document
 
 import (
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const expectedEndpoint string = "/document/preview"
+
 func TestGeneratePreview_RequestIsNil(t *testing.T) {
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
@@ -20,18 +21,17 @@ func TestGeneratePreview_RequestIsNil(t *testing.T) {
 	assert.EqualValues(t, http.StatusBadRequest, response.Code)
 }
 
-
 func TestGeneratePreview_DialError(t *testing.T) {
-	mockDocumentServiceGateway := &mocks.DocumentServiceGateway{}
-	mockDocumentServiceGateway.On("CreateDocumentServiceClient").Return(nil, errors.New("I want to see this error!"))
+	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
+	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnDialError()
 	documentServiceGateway = mockDocumentServiceGateway
 
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
 
-	requestJson := createRequest()
-	request, _ := http.NewRequest(http.MethodPost, "/document/preview", strings.NewReader(requestJson))
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createRequest()))
 	context.Request = request
+
 	GeneratePreview(context)
 
 	assert.EqualValues(t, http.StatusServiceUnavailable, response.Code)
