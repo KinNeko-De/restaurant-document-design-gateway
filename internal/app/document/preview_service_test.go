@@ -37,6 +37,26 @@ func TestGeneratePreview_DialError(t *testing.T) {
 	assert.EqualValues(t, http.StatusServiceUnavailable, response.Code)
 }
 
+func TestGeneratePreview_Valid(t *testing.T) {
+	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
+	documentServiceGateway = mockDocumentServiceGateway
+	mockClient := mocks.NewDocumentServiceClient(t)
+	mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
+	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
+	mockClient.SetupGeneratePreview(mockStream)
+
+	response := httptest.NewRecorder()
+	context := ginfixture.CreateContext(response);
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createRequest()))
+	context.Request = request
+
+	GeneratePreview(context)
+
+	assert.EqualValues(t, http.StatusServiceUnavailable, response.Code)
+}
+
+
+
 /*
 func TestValid(t *testing.T) {
 	documentService := &mocks.DocumentServiceServer{}
