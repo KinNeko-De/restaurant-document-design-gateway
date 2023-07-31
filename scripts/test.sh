@@ -1,0 +1,1 @@
+seq 1 100 | xargs -n1 -P100 -I number curl -X POST -H "Content-Type: application/json" -d '{}' "localhost:42090/document/preview" --output ./number.pdf
