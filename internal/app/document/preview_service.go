@@ -54,7 +54,7 @@ func GeneratePreview(context *gin.Context) {
 
 	firstResponse, streamErr := stream.Recv()
 	if streamErr != nil {
-		context.AbortWithError(http.StatusServiceUnavailable, streamErr)
+		context.AbortWithError(http.StatusInternalServerError, streamErr)
 		return
 	}
 
@@ -72,23 +72,24 @@ func GeneratePreview(context *gin.Context) {
 	for {
 		current, done, requestErr := readNextResponse(stream)
 		if done {
-			return
+			break
 		}
 		if requestErr != nil {
 			context.AbortWithError(http.StatusInternalServerError, requestErr)
-			return
+			break
 		}
 		if somethingElseThanChunkWasSent(current) {
 			context.AbortWithError(http.StatusInternalServerError, errors.New("FileCase of type 'apiDocumentService.GeneratePreviewResponse_Chunk' expected. Actual value is "+reflect.TypeOf(current.File).String()+"."))
-			return
+			break
 		}
 
 		var chunk = current.GetChunk()
 		_, bodyWriteErr := context.Writer.Write(chunk)
 		if bodyWriteErr != nil {
 			context.AbortWithError(http.StatusInternalServerError, bodyWriteErr)
-			return
+			break
 		}
+
 	}
 }
 

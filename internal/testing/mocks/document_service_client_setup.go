@@ -10,3 +10,10 @@ func (mock *DocumentServiceClient) SetupGeneratePreview(mockStream *DocumentServ
 	 testifymock.Anything,
 	 ).Return(mockStream, nil)
 }
+
+func (mock *DocumentServiceClient) SetupGeneratePreviewThrowsError(err error) {
+	mock.EXPECT().GeneratePreview(
+	 testifymock.Anything,
+	 testifymock.Anything,
+	 ).Return(nil, err)
+}
