@@ -17,6 +17,14 @@ type DocumentServiceClient struct {
 	mock.Mock
 }
 
+type DocumentServiceClient_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *DocumentServiceClient) EXPECT() *DocumentServiceClient_Expecter {
+	return &DocumentServiceClient_Expecter{mock: &_m.Mock}
+}
+
 // GeneratePreview provides a mock function with given fields: ctx, in, opts
 func (_m *DocumentServiceClient) GeneratePreview(ctx context.Context, in *v1.GeneratePreviewRequest, opts ...grpc.CallOption) (v1.DocumentService_GeneratePreviewClient, error) {
 	_va := make([]interface{}, len(opts))
@@ -48,6 +56,43 @@ func (_m *DocumentServiceClient) GeneratePreview(ctx context.Context, in *v1.Gen
 	}
 
 	return r0, r1
+}
+
+// DocumentServiceClient_GeneratePreview_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GeneratePreview'
+type DocumentServiceClient_GeneratePreview_Call struct {
+	*mock.Call
+}
+
+// GeneratePreview is a helper method to define mock.On call
+//   - ctx context.Context
+//   - in *v1.GeneratePreviewRequest
+//   - opts ...grpc.CallOption
+func (_e *DocumentServiceClient_Expecter) GeneratePreview(ctx interface{}, in interface{}, opts ...interface{}) *DocumentServiceClient_GeneratePreview_Call {
+	return &DocumentServiceClient_GeneratePreview_Call{Call: _e.mock.On("GeneratePreview",
+		append([]interface{}{ctx, in}, opts...)...)}
+}
+
+func (_c *DocumentServiceClient_GeneratePreview_Call) Run(run func(ctx context.Context, in *v1.GeneratePreviewRequest, opts ...grpc.CallOption)) *DocumentServiceClient_GeneratePreview_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		variadicArgs := make([]grpc.CallOption, len(args)-2)
+		for i, a := range args[2:] {
+			if a != nil {
+				variadicArgs[i] = a.(grpc.CallOption)
+			}
+		}
+		run(args[0].(context.Context), args[1].(*v1.GeneratePreviewRequest), variadicArgs...)
+	})
+	return _c
+}
+
+func (_c *DocumentServiceClient_GeneratePreview_Call) Return(_a0 v1.DocumentService_GeneratePreviewClient, _a1 error) *DocumentServiceClient_GeneratePreview_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DocumentServiceClient_GeneratePreview_Call) RunAndReturn(run func(context.Context, *v1.GeneratePreviewRequest, ...grpc.CallOption) (v1.DocumentService_GeneratePreviewClient, error)) *DocumentServiceClient_GeneratePreview_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewDocumentServiceClient creates a new instance of DocumentServiceClient. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

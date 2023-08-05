@@ -12,6 +12,14 @@ type DocumentServiceGateway struct {
 	mock.Mock
 }
 
+type DocumentServiceGateway_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *DocumentServiceGateway) EXPECT() *DocumentServiceGateway_Expecter {
+	return &DocumentServiceGateway_Expecter{mock: &_m.Mock}
+}
+
 // CreateDocumentServiceClient provides a mock function with given fields:
 func (_m *DocumentServiceGateway) CreateDocumentServiceClient() (v1.DocumentServiceClient, error) {
 	ret := _m.Called()
@@ -36,6 +44,33 @@ func (_m *DocumentServiceGateway) CreateDocumentServiceClient() (v1.DocumentServ
 	}
 
 	return r0, r1
+}
+
+// DocumentServiceGateway_CreateDocumentServiceClient_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateDocumentServiceClient'
+type DocumentServiceGateway_CreateDocumentServiceClient_Call struct {
+	*mock.Call
+}
+
+// CreateDocumentServiceClient is a helper method to define mock.On call
+func (_e *DocumentServiceGateway_Expecter) CreateDocumentServiceClient() *DocumentServiceGateway_CreateDocumentServiceClient_Call {
+	return &DocumentServiceGateway_CreateDocumentServiceClient_Call{Call: _e.mock.On("CreateDocumentServiceClient")}
+}
+
+func (_c *DocumentServiceGateway_CreateDocumentServiceClient_Call) Run(run func()) *DocumentServiceGateway_CreateDocumentServiceClient_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *DocumentServiceGateway_CreateDocumentServiceClient_Call) Return(_a0 v1.DocumentServiceClient, _a1 error) *DocumentServiceGateway_CreateDocumentServiceClient_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DocumentServiceGateway_CreateDocumentServiceClient_Call) RunAndReturn(run func() (v1.DocumentServiceClient, error)) *DocumentServiceGateway_CreateDocumentServiceClient_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewDocumentServiceGateway creates a new instance of DocumentServiceGateway. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

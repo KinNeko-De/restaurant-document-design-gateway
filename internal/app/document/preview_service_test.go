@@ -51,7 +51,6 @@ func TestGeneratePreview_Valid(t *testing.T) {
 	mockStream.EXPECT().Recv().Return(nil, io.EOF).Once()
 	mockStream.EXPECT().CloseSend().Return(nil).Once()
 
-
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createRequest()))

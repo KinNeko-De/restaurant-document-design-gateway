@@ -5,9 +5,9 @@ import (
 )
 
 func (mock *DocumentServiceGateway) SetupDocumentServiceGatewayToReturnDialError() {
-	mock.On("CreateDocumentServiceClient").Return(nil, errors.New("i can not reproduce a dial error"))
+	mock.EXPECT().CreateDocumentServiceClient().Return(nil, errors.New("i can not reproduce a dial error"))
 }
 
 func (mock *DocumentServiceGateway) SetupDocumentServiceGatewayToReturnClient(mockClient *DocumentServiceClient) {
-	mock.On("CreateDocumentServiceClient").Return(mockClient, nil)
+	mock.EXPECT().CreateDocumentServiceClient().Return(mockClient, nil)
 }
