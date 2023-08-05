@@ -9,8 +9,9 @@ import (
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
 	fixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/document"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/ginfixture"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/mocks"
+	mocks "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/document/mocks"
+	ginfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/gin"
+	ginmocks "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/gin/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -209,20 +210,46 @@ func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
 
 func TestGeneratePreview_MetadataIsSentTwice(t *testing.T) {
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
-documentServiceGateway = mockDocumentServiceGateway
-mockClient := mocks.NewDocumentServiceClient(t)
-mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
-mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
-mockClient.SetupGeneratePreview(mockStream)
-mockStream.SetupStreamValidMetadata()
-mockStream.SetupStreamValidMetadata()
+	documentServiceGateway = mockDocumentServiceGateway
+	mockClient := mocks.NewDocumentServiceClient(t)
+	mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
+	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
+	mockClient.SetupGeneratePreview(mockStream)
+	mockStream.SetupStreamValidMetadata()
+	mockStream.SetupStreamValidMetadata()
 
-response := httptest.NewRecorder()
-context := ginfixture.CreateContext(response);
-request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
-context.Request = request
+	response := httptest.NewRecorder()
+	context := ginfixture.CreateContext(response);
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
+	context.Request = request
 
-GeneratePreview(context)
+	GeneratePreview(context)
 
-assert.Equal(t, http.StatusInternalServerError, response.Code)
+	assert.Equal(t, http.StatusInternalServerError, response.Code)
+}
+
+func TestGeneratePreview_HttpContextWriterError(t *testing.T) {
+	writerError := errors.New("error while writing into http respnse")
+
+	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
+	documentServiceGateway = mockDocumentServiceGateway
+	mockClient := mocks.NewDocumentServiceClient(t)
+	mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
+	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
+	mockClient.SetupGeneratePreview(mockStream)
+	mockStream.SetupStreamValidMetadata()
+	mockStream.SetupStreamValidChunk()
+
+	response := httptest.NewRecorder()
+	context := ginfixture.CreateContext(response)
+	writerMock := ginmocks.CreateResponseWriterMock(t, response)
+	writerMock.SetupWriteError(writerError)
+	context.Writer = writerMock
+
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
+	context.Request = request
+
+	GeneratePreview(context)
+
+	assert.Equal(t, http.StatusInternalServerError, response.Code)
 }
