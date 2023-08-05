@@ -1,4 +1,4 @@
-# Generate documents for restaurant
+# restaurant-document-design-gateway
 This service is a api gatewy for designing restaurant documents.
 It is part of the [restaraunt project](https://github.com/KinNeko-De/restaurant).
 
