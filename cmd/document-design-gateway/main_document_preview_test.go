@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	mainfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/main"
 )
 
 const expectedEndpoint string = "/document/preview"
@@ -15,7 +17,7 @@ const expectedEndpoint string = "/document/preview"
 func TestDocumentPreview_RequestIsNil(t *testing.T) {
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, nil)
 
-	response := SendRequestToSut(request)
+	response := mainfixture.SendRequestToSut(setupRouter(), request)
 
 	assert.Equal(t, http.StatusBadRequest, response.Code)
 }
