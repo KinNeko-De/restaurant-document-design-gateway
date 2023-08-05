@@ -47,6 +47,7 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	expectedContentType := mediaType
 	expectedContentLength := "134034";
 	expectedContentDisposition := `attachment; filename="invoice.pdf"`;
+	expectedFile := []byte{84,104,101,32,97,110,115,119,101,114,32,105,115,32,52,50}
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
 	documentServiceGateway = mockDocumentServiceGateway
@@ -55,7 +56,9 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
 	mockClient.SetupGeneratePreview(mockStream)
 	mockStream.EXPECT().Recv().Return(&v1.GeneratePreviewResponse{ File: &v1.GeneratePreviewResponse_Metadata{ Metadata: &v1.GeneratedFileMetadata{ MediaType: mediaType, Size: size, Extension: extension,}}}, nil).Once()
-	mockStream.EXPECT().Recv().Return(&v1.GeneratePreviewResponse{ File: &v1.GeneratePreviewResponse_Chunk{ Chunk: make([]byte, 10)}}, nil).Once()
+	mockStream.EXPECT().Recv().Return(&v1.GeneratePreviewResponse{ File: &v1.GeneratePreviewResponse_Chunk{ Chunk: expectedFile[0:6] }}, nil).Once()
+	mockStream.EXPECT().Recv().Return(&v1.GeneratePreviewResponse{ File: &v1.GeneratePreviewResponse_Chunk{ Chunk: expectedFile[6:11] }}, nil).Once()
+	mockStream.EXPECT().Recv().Return(&v1.GeneratePreviewResponse{ File: &v1.GeneratePreviewResponse_Chunk{ Chunk: expectedFile[11:cap(expectedFile)] }}, nil).Once()
 	mockStream.EXPECT().Recv().Return(nil, io.EOF).Once()
 	mockStream.EXPECT().CloseSend().Return(nil).Once()
 
@@ -70,6 +73,7 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	assert.Equal(t, expectedContentType, response.Header().Get(httpheader.ContentType))
 	assert.Equal(t, expectedContentLength, response.Header().Get(httpheader.ContentLength))
 	assert.Equal(t, expectedContentDisposition, response.Header().Get(httpheader.ContentDisposition))
+	assert.EqualValues(t, expectedFile, response.Body.Bytes())
 }
 
 func createValidRequest() string {
