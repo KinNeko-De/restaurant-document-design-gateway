@@ -32,7 +32,7 @@ func TestGeneratePreview_DialError(t *testing.T) {
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
 
-	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createValidRequest()))
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
 	GeneratePreview(context)
@@ -69,7 +69,7 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
-	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createValidRequest()))
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
 	GeneratePreview(context)
@@ -113,7 +113,7 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
-	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createValidRequest()))
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
 	GeneratePreview(context)
@@ -137,7 +137,7 @@ func TestGeneratePreview_ErrorWhileConnecting(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
-	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createValidRequest()))
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
 	GeneratePreview(context)
@@ -158,7 +158,7 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForMetadata(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
-	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createValidRequest()))
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
 	GeneratePreview(context)
@@ -180,7 +180,7 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	context := ginfixture.CreateContext(response);
-	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(createValidRequest()))
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
 	GeneratePreview(context)
@@ -188,7 +188,41 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
 }
 
-func createValidRequest() string {
-	request := `{}`
-	return request
+func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
+		mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
+	documentServiceGateway = mockDocumentServiceGateway
+	mockClient := mocks.NewDocumentServiceClient(t)
+	mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
+	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
+	mockClient.SetupGeneratePreview(mockStream)
+	mockStream.SetupStreamValidChunk()
+
+	response := httptest.NewRecorder()
+	context := ginfixture.CreateContext(response);
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
+	context.Request = request
+
+	GeneratePreview(context)
+
+	assert.Equal(t, http.StatusInternalServerError, response.Code)
+}
+
+func TestGeneratePreview_MetadataIsSentTwice(t *testing.T) {
+	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
+documentServiceGateway = mockDocumentServiceGateway
+mockClient := mocks.NewDocumentServiceClient(t)
+mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
+mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
+mockClient.SetupGeneratePreview(mockStream)
+mockStream.SetupStreamValidMetadata()
+mockStream.SetupStreamValidMetadata()
+
+response := httptest.NewRecorder()
+context := ginfixture.CreateContext(response);
+request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
+context.Request = request
+
+GeneratePreview(context)
+
+assert.Equal(t, http.StatusInternalServerError, response.Code)
 }
