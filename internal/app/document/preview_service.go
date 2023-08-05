@@ -3,6 +3,7 @@ package document
 import (
 	grpccontext "context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"reflect"
@@ -13,11 +14,12 @@ import (
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
-	documentServiceGateway DocumentServiceGateway;
+	documentServiceGateway DocumentServiceGateway
 )
 
 func init() {
@@ -34,6 +36,7 @@ func GeneratePreview(context *gin.Context) {
 		return
 	}
 	previewRequest := generateTestDocument()
+	fileName := "invoice"
 
 	client, dialError := documentServiceGateway.CreateDocumentServiceClient()
 	if dialError != nil {
@@ -61,8 +64,9 @@ func GeneratePreview(context *gin.Context) {
 		return
 	}
 	var metadata = firstResponse.GetMetadata()
-	context.Header("Content-Type", metadata.MediaType)
-	context.Header("Content-Length", strconv.FormatUint(metadata.Size, 10))
+	context.Header(httpheader.ContentType, metadata.MediaType)
+	context.Header(httpheader.ContentLength, strconv.FormatUint(metadata.Size, 10))
+	context.Header(httpheader.ContentDisposition, fmt.Sprintf("attachment; filename=\"%s%s\"", fileName, metadata.Extension))
 	context.Status(http.StatusCreated)
 
 	for {
@@ -156,4 +160,5 @@ func readNextResponse(stream apiRestaurantDocument.DocumentService_GeneratePrevi
 	}
 	return current, false, nil
 }
+
 // Do not remove last empty line : https://github.com/golang/go/issues/58370

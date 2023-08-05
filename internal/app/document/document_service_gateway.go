@@ -12,6 +12,7 @@ import (
 
 var (
 	apiDocumentServiceUrl string = "set_by_init"
+	
 )
 
 func init() {
@@ -43,13 +44,16 @@ func readConfig() {
 }
 
 func loadApiDocumentServiceConfig() (string, error){
-	host, found := os.LookupEnv("DOCUMENTGENERATESERVICE_HOST")
+	const hostEnv = "DOCUMENTGENERATESERVICE_HOST"
+	const portEnv = "DOCUMENTGENERATESERVICE_PORT"
+
+	host, found := os.LookupEnv(hostEnv)
 	if(!found) {
-		return "", errors.New("service host to generate documents is not configured. Expect environment variable DOCUMENTSERVICE_HOST")
+		return "", errors.New("service host to generate documents is not configured. Expect environment variable " + hostEnv)
 	}
-	port, found := os.LookupEnv("DOCUMENTGENERATESERVICE_PORT")
+	port, found := os.LookupEnv(portEnv)
 	if(!found) {
-		return "", errors.New("service port to generate documents is not configured. Expect environment variable DOCUMENTSERVICE_PORT")
+		return "", errors.New("service port to generate documents is not configured. Expect environment variable " + portEnv)
 	}
 
 	return host + ":" + port, nil
