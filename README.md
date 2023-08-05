@@ -3,7 +3,7 @@ This service is a api gatewy for designing restaurant documents.
 It is part of the [restaraunt project](https://github.com/KinNeko-De/restaurant).
 
 # Automation
-Every time you push something a [pipeline](.github/workflows/pipeline.yml) will run. As developers, we are working to automate processes and thus eliminate manual work. There's no excuse why we have to do things manually.
+Every time you push something a [ci pipeline](.github/workflows/ci.yml) will run. As developers, we are working to automate processes and thus eliminate manual work. There's no excuse why we have to do things manually.
 
 [![restaurant-document-design-gateway-ci](https://github.com/KinNeko-De/restaurant-document-design-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/KinNeko-De/restaurant-document-design-gateway/actions/workflows/ci.yml)
 
