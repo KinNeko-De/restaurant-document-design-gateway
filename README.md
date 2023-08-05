@@ -1,6 +1,6 @@
 # Generate documents for restaurant
 This service is a api gatewy for designing restaurant documents.
-It is part of the restaraunt project.
+It is part of the [restaraunt project](https://github.com/KinNeko-De/restaurant).
 
 # Automation
 Every time you push something a [pipeline](.github/workflows/pipeline.yml) will run. As developers, we are working to automate processes and thus eliminate manual work. There's no excuse why we have to do things manually.
