@@ -34,8 +34,8 @@ github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnr
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/kinneko-de/api-contract/golang/kinnekode/protobuf v0.2.5 h1:Hy51ABqJ3Mb1xMGqefGKa4UVd679is6mOlEfhFpXC6Y=
 github.com/kinneko-de/api-contract/golang/kinnekode/protobuf v0.2.5/go.mod h1:gn/wdjDXrpdTYeIRzi/GWPG/bAJ1z1jjgiov/wRT2fM=
-github.com/kinneko-de/api-contract/golang/kinnekode/restaurant v0.2.5-document-request.10 h1:E+m9daAk7bBnuprEaSYMaeUqcRcGRR+iHASPkJ7kFhI=
-github.com/kinneko-de/api-contract/golang/kinnekode/restaurant v0.2.5-document-request.10/go.mod h1:4m/A9tVLXmNNgYpM3B4My2BDU5SmveKg1x8dMVs/ZYY=
+github.com/kinneko-de/api-contract/golang/kinnekode/restaurant v0.0.1 h1:OdMGr/TD7UMtN6mRMaX2If/fSBlHRMYh1BCmFB673kI=
+github.com/kinneko-de/api-contract/golang/kinnekode/restaurant v0.0.1/go.mod h1:4m/A9tVLXmNNgYpM3B4My2BDU5SmveKg1x8dMVs/ZYY=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
 github.com/klauspost/cpuid/v2 v2.2.4 h1:acbojRNwl3o09bUq+yDCtZFc1aiwaAAxtcn8YkZXnvk=
 github.com/klauspost/cpuid/v2 v2.2.4/go.mod h1:RVVoqg1df56z8g3pUjL/3lE5UfnlrJX8tyFgg4nqhuY=

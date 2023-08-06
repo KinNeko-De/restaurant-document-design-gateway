@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/kinneko-de/api-contract/golang/kinnekode/protobuf v0.2.5
-	github.com/kinneko-de/api-contract/golang/kinnekode/restaurant v0.2.5-document-request.10
+	github.com/kinneko-de/api-contract/golang/kinnekode/restaurant v0.0.1
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.57.0
 )
