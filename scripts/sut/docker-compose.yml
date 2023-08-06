@@ -1,0 +1,22 @@
+version: '3.9'
+name: restaurant-document-design-gateway
+
+services:
+  restaurant-document-design-gateway:
+    image: restaurant-document-design-gateway
+    networks:
+      - project-network
+    container_name: restaurant-document-design-gateway
+    build:
+      dockerfile: ../../build/dockerfile
+    ports:
+      - "42090:8080"
+    environment: 
+    - GIN_MODE=release
+    - DOCUMENTGENERATESERVICE_HOST=restaurant-document-generate-svc
+    - DOCUMENTGENERATESERVICE_PORT=3110
+
+networks:
+  project-network:
+    name: restaurant
+    external: true
