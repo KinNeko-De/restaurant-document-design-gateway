@@ -19,9 +19,9 @@ const expectedEndpoint string = "/document/preview"
 
 func TestGeneratePreview_RequestIsNil(t *testing.T) {
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	GeneratePreview(context)
-	
+
 	assert.EqualValues(t, http.StatusBadRequest, response.Code)
 }
 
@@ -31,7 +31,7 @@ func TestGeneratePreview_DialError(t *testing.T) {
 	documentServiceGateway = mockDocumentServiceGateway
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
@@ -46,9 +46,9 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	size := uint64(134034)
 	extension := ".pdf"
 	expectedContentType := mediaType
-	expectedContentLength := "134034";
-	expectedContentDisposition := `attachment; filename="invoice.pdf"`;
-	expectedFile := []byte{84,104,101,32,97,110,115,119,101,114,32,105,115,32,52,50}
+	expectedContentLength := "134034"
+	expectedContentDisposition := `inline; filename="invoice.pdf"`
+	expectedFile := []byte{84, 104, 101, 32, 97, 110, 115, 119, 101, 114, 32, 105, 115, 32, 52, 50}
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
 	documentServiceGateway = mockDocumentServiceGateway
@@ -57,11 +57,11 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnClient(mockClient)
 	mockClient.SetupGeneratePreview(mockStream)
 	mockStream.EXPECT().Recv().
-	Return(fixture.NewGeneratePreviewResponseMetadataBuilder().
-		WithMediaType(mediaType).
-		WithSize(size).
-		WithExtension(extension).
-		Build(), nil).Once()
+		Return(fixture.NewGeneratePreviewResponseMetadataBuilder().
+			WithMediaType(mediaType).
+			WithSize(size).
+			WithExtension(extension).
+			Build(), nil).Once()
 	mockStream.EXPECT().Recv().Return(fixture.NewGeneratePreviewResponseChunkBuilder().WithChunk(expectedFile[0:6]).Build(), nil).Once()
 	mockStream.EXPECT().Recv().Return(fixture.NewGeneratePreviewResponseChunkBuilder().WithChunk(expectedFile[6:11]).Build(), nil).Once()
 	mockStream.EXPECT().Recv().Return(fixture.NewGeneratePreviewResponseChunkBuilder().WithChunk(expectedFile[11:cap(expectedFile)]).Build(), nil).Once()
@@ -69,7 +69,7 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	mockStream.SetupStreamClose()
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
@@ -89,9 +89,9 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 	size := uint64(134034)
 	extension := ".pdf"
 	expectedContentType := mediaType
-	expectedContentLength := "134034";
-	expectedContentDisposition := `attachment; filename="invoice.pdf"`;
-	expectedFile := []byte{84,104,101,32,97,110,115,119,101,114,32,105,115,32,52,50}
+	expectedContentLength := "134034"
+	expectedContentDisposition := `inline; filename="invoice.pdf"`
+	expectedFile := []byte{84, 104, 101, 32, 97, 110, 115, 119, 101, 114, 32, 105, 115, 32, 52, 50}
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
 	documentServiceGateway = mockDocumentServiceGateway
@@ -113,7 +113,7 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 	mockStream.EXPECT().CloseSend().Return(closingError).Once()
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
@@ -137,7 +137,7 @@ func TestGeneratePreview_ErrorWhileConnecting(t *testing.T) {
 	mockClient.SetupGeneratePreviewThrowsError(connectingError)
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
@@ -158,7 +158,7 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForMetadata(t *testing.T) {
 	mockStream.EXPECT().Recv().Return(nil, receivingError).Once()
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
@@ -180,7 +180,7 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
 	mockStream.EXPECT().Recv().Return(nil, receivingError).Once()
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
@@ -190,7 +190,7 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
 }
 
 func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
-		mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
+	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
 	documentServiceGateway = mockDocumentServiceGateway
 	mockClient := mocks.NewDocumentServiceClient(t)
 	mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
@@ -199,7 +199,7 @@ func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
 	mockStream.SetupStreamValidChunk()
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
@@ -219,7 +219,7 @@ func TestGeneratePreview_MetadataIsSentTwice(t *testing.T) {
 	mockStream.SetupStreamValidMetadata()
 
 	response := httptest.NewRecorder()
-	context := ginfixture.CreateContext(response);
+	context := ginfixture.CreateContext(response)
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
 	context.Request = request
 
