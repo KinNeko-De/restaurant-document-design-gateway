@@ -1,10 +1,11 @@
 package document
 
 import (
-	grpccontext "context"
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -19,55 +20,69 @@ import (
 )
 
 var (
-	documentServiceGateway DocumentServiceGateway
+	documentServiceGateway DocumentServiceGateway = DocumentServiceGateKeeper{}
 )
-
-func init() {
-	documentServiceGateway = DocumentServiceGateKeeper{}
-}
 
 type GeneratePreviewRequest struct {
 }
 
-func GeneratePreview(context *gin.Context) {
+func GeneratePreviewDemo(ctx *gin.Context) {
+	previewRequest := generateTestDocument()
+	fileName := ctx.Keys["userId"].(string)
+
+	err := generatePreview(ctx, previewRequest, fileName)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func GeneratePreview(ctx *gin.Context) {
 	var request GeneratePreviewRequest
-	if err := context.BindJSON(&request); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "request can not be parsed"})
+	if err := ctx.BindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "request can not be parsed"})
 		return
 	}
 	previewRequest := generateTestDocument()
 	fileName := "invoice"
 
-	client, dialError := documentServiceGateway.CreateDocumentServiceClient()
-	if dialError != nil {
-		context.JSON(http.StatusServiceUnavailable, gin.H{"error": "service not available. please try again later"})
+	err := generatePreview(ctx, previewRequest, fileName)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.GeneratePreviewRequest, fileName string) (err error) {
+	client, err := documentServiceGateway.CreateDocumentServiceClient()
+	if err != nil {
+		ctx.JSON(http.StatusServiceUnavailable, err)
 		return
 	}
 
-	callContext, cancelFunc := grpccontext.WithDeadline(grpccontext.Background(), timeout.GetDeadline(timeout.LongDeadline))
+	callContext, cancelFunc := context.WithDeadline(context.Background(), timeout.GetDeadline(timeout.LongDeadline))
 	defer cancelFunc()
-	stream, clientErr := client.GeneratePreview(callContext, previewRequest)
-	if clientErr != nil {
-		context.AbortWithError(http.StatusServiceUnavailable, clientErr)
+	stream, err := client.GeneratePreview(callContext, previewRequest)
+	if err != nil {
+		ctx.AbortWithError(http.StatusServiceUnavailable, err)
 		return
 	}
 
-	firstResponse, streamErr := stream.Recv()
-	if streamErr != nil {
-		context.AbortWithError(http.StatusInternalServerError, streamErr)
+	firstResponse, err := stream.Recv()
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	_, ok := firstResponse.File.(*apiRestaurantDocument.GeneratePreviewResponse_Metadata)
 	if !ok {
-		context.AbortWithError(http.StatusInternalServerError, errors.New("FileCase of type 'apidocument.DownloadDocumentResponse_Metadata' expected. Actual value is "+reflect.TypeOf(firstResponse.File).String()+"."))
+		err = errors.New("FileCase of type 'apidocument.DownloadDocumentResponse_Metadata' expected. Actual value is " + reflect.TypeOf(firstResponse.File).String() + ".")
+		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	var metadata = firstResponse.GetMetadata()
-	context.Header(httpheader.ContentType, metadata.MediaType)
-	context.Header(httpheader.ContentLength, strconv.FormatUint(metadata.Size, 10))
-	context.Header(httpheader.ContentDisposition, fmt.Sprintf("attachment; filename=\"%s%s\"", fileName, metadata.Extension))
-	context.Status(http.StatusCreated)
+	ctx.Header(httpheader.ContentType, metadata.MediaType)
+	ctx.Header(httpheader.ContentLength, strconv.FormatUint(metadata.Size, 10))
+	ctx.Header(httpheader.ContentDisposition, fmt.Sprintf("inline; filename=\"%s%s\"", fileName, metadata.Extension))
+	ctx.Status(http.StatusCreated)
 
 	for {
 		current, done, requestErr := readNextResponse(stream)
@@ -75,22 +90,24 @@ func GeneratePreview(context *gin.Context) {
 			break
 		}
 		if requestErr != nil {
-			context.AbortWithError(http.StatusInternalServerError, requestErr)
+			ctx.AbortWithError(http.StatusInternalServerError, requestErr)
 			break
 		}
 		if somethingElseThanChunkWasSent(current) {
-			context.AbortWithError(http.StatusInternalServerError, errors.New("FileCase of type 'apiDocumentService.GeneratePreviewResponse_Chunk' expected. Actual value is "+reflect.TypeOf(current.File).String()+"."))
+			ctx.AbortWithError(http.StatusInternalServerError, errors.New("FileCase of type 'apiDocumentService.GeneratePreviewResponse_Chunk' expected. Actual value is "+reflect.TypeOf(current.File).String()+"."))
 			break
 		}
 
 		var chunk = current.GetChunk()
-		_, bodyWriteErr := context.Writer.Write(chunk)
+		_, bodyWriteErr := ctx.Writer.Write(chunk)
 		if bodyWriteErr != nil {
-			context.AbortWithError(http.StatusInternalServerError, bodyWriteErr)
+			ctx.AbortWithError(http.StatusInternalServerError, bodyWriteErr)
 			break
 		}
 
 	}
+
+	return
 }
 
 func generateTestDocument() *apiRestaurantDocument.GeneratePreviewRequest {
@@ -161,5 +178,3 @@ func readNextResponse(stream apiRestaurantDocument.DocumentService_GeneratePrevi
 	}
 	return current, false, nil
 }
-
-// Do not remove last empty line : https://github.com/golang/go/issues/58370

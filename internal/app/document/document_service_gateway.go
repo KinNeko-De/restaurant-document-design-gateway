@@ -15,7 +15,6 @@ const portEnv = "DOCUMENTGENERATESERVICE_PORT"
 
 var (
 	apiDocumentServiceUrl string = "set_by_init"
-	
 )
 
 func init() {
@@ -32,7 +31,7 @@ type DocumentServiceGateKeeper struct {
 func (DocumentServiceGateKeeper) CreateDocumentServiceClient() (apiRestaurantDocument.DocumentServiceClient, error) {
 	connection, dialError := grpc.Dial(apiDocumentServiceUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if dialError != nil {
-		return nil, dialError;
+		return nil, dialError
 	}
 	client := apiRestaurantDocument.NewDocumentServiceClient(connection)
 	return client, nil
@@ -46,16 +45,15 @@ func readConfig() {
 	apiDocumentServiceUrl = connection
 }
 
-func loadApiDocumentServiceConfig() (string, error){
+func loadApiDocumentServiceConfig() (string, error) {
 	host, found := os.LookupEnv(hostEnv)
-	if(!found) {
+	if !found {
 		return "", errors.New("service host to generate documents is not configured. Expect environment variable " + hostEnv)
 	}
 	port, found := os.LookupEnv(portEnv)
-	if(!found) {
+	if !found {
 		return "", errors.New("service port to generate documents is not configured. Expect environment variable " + portEnv)
 	}
 
 	return host + ":" + port, nil
 }
-// Do not remove last empty line : https://github.com/golang/go/issues/58370
