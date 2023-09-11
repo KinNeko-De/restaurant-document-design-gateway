@@ -34,7 +34,7 @@ func init() {
 	var err error
 	clientId, clientSecret, err = loadOAuthConfig()
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 }
 
