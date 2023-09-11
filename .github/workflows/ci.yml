@@ -5,7 +5,7 @@ on:
       - 'documentation/**'
 
 env:
-  MAJOR_MINOR_PATCH: 0.1.0
+  MAJOR_MINOR_PATCH: 0.2.0
   GIN_MODE: release
   MAIN_PACKAGE: 'cmd/document-design-gateway/main.go'
 
@@ -82,3 +82,13 @@ jobs:
           file: ./build/dockerfile
           push: false
           tags: ${{ steps.semantic_version.outputs.semantic_version }} # on push later
+      - name: Create semantic versioning git tag for golang
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/v${{ steps.semantic_version.outputs.semantic_version }}",
+               sha: context.sha
+             })
