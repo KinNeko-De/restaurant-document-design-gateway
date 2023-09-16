@@ -299,6 +299,24 @@ func TestGeneratePreview_HttpContextWriterError(t *testing.T) {
 	t.Cleanup(Cleanup)
 }
 
+func TestGeneratePreview_Unauthorized(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
+	response := httptest.NewRecorder()
+	context := ginfixture.CreateContext(response)
+	// TODO replace with clear function in Go 1.21
+	for k := range context.Keys {
+		delete(context.Keys, k)
+	}
+	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
+	context.Request = request
+
+	GeneratePreview(context)
+
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+}
+
 func TestGeneratePreview_IsRateLimited(t *testing.T) {
 	limitedAfter := int(4)
 	t.Setenv(hostEnv, "http://localhost")
