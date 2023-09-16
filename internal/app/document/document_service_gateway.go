@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const hostEnv = "DOCUMENTGENERATESERVICE_HOST"
-const portEnv = "DOCUMENTGENERATESERVICE_PORT"
+const HostEnv = "DOCUMENTGENERATESERVICE_HOST"
+const PortEnv = "DOCUMENTGENERATESERVICE_PORT"
 
 var (
 	apiDocumentServiceUrl string = "set_by_read_config"
@@ -43,13 +43,13 @@ func ReadConfig() error {
 }
 
 func loadApiDocumentServiceConfig() (string, error) {
-	host, found := os.LookupEnv(hostEnv)
+	host, found := os.LookupEnv(HostEnv)
 	if !found {
-		return "", errors.New("service host to generate documents is not configured. Expect environment variable " + hostEnv)
+		return "", errors.New("service host to generate documents is not configured. Expect environment variable " + HostEnv)
 	}
-	port, found := os.LookupEnv(portEnv)
+	port, found := os.LookupEnv(PortEnv)
 	if !found {
-		return "", errors.New("service port to generate documents is not configured. Expect environment variable " + portEnv)
+		return "", errors.New("service port to generate documents is not configured. Expect environment variable " + PortEnv)
 	}
 
 	return host + ":" + port, nil

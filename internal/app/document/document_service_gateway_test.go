@@ -7,28 +7,28 @@ import (
 )
 
 func TestLoadApiDocumentServiceConfig_HostIsMissing(t *testing.T) {
-	t.Setenv(portEnv, "8080")
+	t.Setenv(PortEnv, "8080")
 
 	actualConfig, actualError := loadApiDocumentServiceConfig()
 
 	assert.Equal(t, "", actualConfig)
 	assert.NotNil(t, actualError)
-	assert.Contains(t, actualError.Error(), hostEnv)
+	assert.Contains(t, actualError.Error(), HostEnv)
 }
 
 func TestLoadApiDocumentServiceConfig_PortIsMissing(t *testing.T) {
-	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(HostEnv, "http://localhost")
 
 	actualConfig, actualError := loadApiDocumentServiceConfig()
 
 	assert.Equal(t, "", actualConfig)
 	assert.NotNil(t, actualError)
-	assert.Contains(t, actualError.Error(), portEnv)
+	assert.Contains(t, actualError.Error(), PortEnv)
 }
 
 func TestLoadApiDocumentServiceConfig_ValidConfig(t *testing.T) {
-	t.Setenv(hostEnv, "http://localhost")
-	t.Setenv(portEnv, "8080")
+	t.Setenv(HostEnv, "http://localhost")
+	t.Setenv(PortEnv, "8080")
 
 	actualConfig, actualError := loadApiDocumentServiceConfig()
 
@@ -37,8 +37,8 @@ func TestLoadApiDocumentServiceConfig_ValidConfig(t *testing.T) {
 }
 
 func TestCreateDocumentServiceClient_MissconfiguredUrl_ThrowsNoDialErrorMaybeBecauseItIsInsecure(t *testing.T) {
-	t.Setenv(hostEnv, "iamnotthere")
-	t.Setenv(portEnv, "8080")
+	t.Setenv(HostEnv, "iamnotthere")
+	t.Setenv(PortEnv, "8080")
 	ReadConfig()
 	actualClient, actualError := documentServiceGateway.CreateDocumentServiceClient()
 

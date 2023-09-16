@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	mainfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/main"
 )
 
@@ -15,6 +16,9 @@ const expectedEndpoint string = "/document/preview"
 
 // tests that the service is mapped to the expected expectedEndpoint (no code coverage)
 func TestDocumentPreview_RequestIsNil(t *testing.T) {
+	t.Setenv(document.HostEnv, "http://localhost")
+	t.Setenv(document.PortEnv, "8080")
+
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, nil)
 
 	response := mainfixture.SendRequestToSut(setupRouter(), request)
