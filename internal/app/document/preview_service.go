@@ -9,31 +9,25 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
+	"golang.org/x/time/rate"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
 	documentServiceGateway DocumentServiceGateway = DocumentServiceGateKeeper{}
+	rateLimiters           sync.Map
 )
 
 type GeneratePreviewRequest struct {
-}
-
-func GeneratePreviewDemo(ctx *gin.Context) {
-	previewRequest := generateTestDocument()
-	fileName := ctx.Keys["userId"].(string)
-
-	err := generatePreview(ctx, previewRequest, fileName)
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 func GeneratePreview(ctx *gin.Context) {
@@ -42,16 +36,37 @@ func GeneratePreview(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "request can not be parsed"})
 		return
 	}
-	previewRequest := generateTestDocument()
-	fileName := "invoice"
+	GeneratePreviewDemo(ctx)
+}
 
-	err := generatePreview(ctx, previewRequest, fileName)
-	if err != nil {
-		log.Println(err)
+func GeneratePreviewDemo(ctx *gin.Context) {
+	if requestNotLimited(ctx.Keys["userId"].(string)) {
+		previewRequest := generateTestDocument()
+		err := generatePreview(ctx, previewRequest)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded. try again later"})
 	}
 }
 
-func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.GeneratePreviewRequest, fileName string) (err error) {
+func requestNotLimited(userId string) bool {
+	rateLimiter, _ := rateLimiters.LoadOrStore(userId, createRateLimiter())
+	if rateLimiter.(*rate.Limiter).Allow() {
+		return true
+	} else {
+		return false
+	}
+}
+
+func createRateLimiter() *rate.Limiter {
+	rateLimiter := rate.NewLimiter(rate.Every(20*time.Minute), 3)
+	return rateLimiter
+}
+
+func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.GeneratePreviewRequest) (err error) {
+	fileName := uuid.New().String()
 	client, err := documentServiceGateway.CreateDocumentServiceClient()
 	if err != nil {
 		ctx.JSON(http.StatusServiceUnavailable, err)

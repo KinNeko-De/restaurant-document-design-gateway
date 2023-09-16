@@ -22,7 +22,6 @@ func TestDocumentPreview_RequestIsNil(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, response.Code)
 }
 
-
 func readResponse[K any](t *testing.T, response *http.Response) K {
 	data := ReadAllBytes(t, response)
 	actualResponse := decodeToJson[K](t, data)
