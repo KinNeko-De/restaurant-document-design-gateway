@@ -95,8 +95,8 @@ func getUserId(ctx *gin.Context, state string, code string) (string, error) {
 	}
 
 	githubOauthConfig := &oauth2.Config{
-		ClientID:     "555b51541211ad2920da",
-		ClientSecret: "b8ea04669ded3c146e5c7e43aecb26ba133f7d32",
+		ClientID:     clientId,
+		ClientSecret: clientSecret,
 		Scopes:       []string{},
 		Endpoint:     oauthgithub.Endpoint,
 	}
