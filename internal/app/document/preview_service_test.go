@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
@@ -24,6 +25,8 @@ func TestGeneratePreview_RequestIsNil(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.EqualValues(t, http.StatusBadRequest, response.Code)
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_DialError(t *testing.T) {
@@ -40,6 +43,8 @@ func TestGeneratePreview_DialError(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.EqualValues(t, http.StatusServiceUnavailable, response.Code)
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_ValidRequest(t *testing.T) {
@@ -81,6 +86,8 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	assert.Equal(t, expectedContentLength, response.Header().Get(httpheader.ContentLength))
 	assert.Regexp(t, regexp.MustCompile(expectedContentDisposition), response.Header().Get(httpheader.ContentDisposition))
 	assert.EqualValues(t, expectedFile, response.Body.Bytes())
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
@@ -120,6 +127,8 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, response.Code)
 	assert.EqualValues(t, expectedFile, response.Body.Bytes())
 	// TODO Log error
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_ErrorWhileConnecting(t *testing.T) {
@@ -139,6 +148,8 @@ func TestGeneratePreview_ErrorWhileConnecting(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusServiceUnavailable, response.Code)
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_ErrorFromStreamWhileWaitingForMetadata(t *testing.T) {
@@ -160,6 +171,8 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForMetadata(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
@@ -182,6 +195,8 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
@@ -201,6 +216,8 @@ func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_MetadataIsSentTwice(t *testing.T) {
@@ -221,6 +238,8 @@ func TestGeneratePreview_MetadataIsSentTwice(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
+
+	t.Cleanup(Cleanup)
 }
 
 func TestGeneratePreview_HttpContextWriterError(t *testing.T) {
@@ -247,4 +266,10 @@ func TestGeneratePreview_HttpContextWriterError(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
+
+	t.Cleanup(Cleanup)
+}
+
+func Cleanup() {
+	rateLimiters = sync.Map{}
 }
