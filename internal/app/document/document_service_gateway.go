@@ -38,8 +38,6 @@ func ReadConfig() error {
 		return err
 	}
 	apiDocumentServiceUrl = connection
-
-	return nil
 }
 
 func loadApiDocumentServiceConfig() (string, error) {

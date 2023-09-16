@@ -35,3 +35,13 @@ func TestLoadApiDocumentServiceConfig_ValidConfig(t *testing.T) {
 	assert.Equal(t, "http://localhost:8080", actualConfig)
 	assert.Nil(t, actualError)
 }
+
+func TestCreateDocumentServiceClient_MissconfiguredUrl_ThrowsNoDialErrorMaybeBecauseItIsInsecure(t *testing.T) {
+	t.Setenv(hostEnv, "iamnotthere")
+	t.Setenv(portEnv, "8080")
+	ReadConfig()
+	actualClient, actualError := documentServiceGateway.CreateDocumentServiceClient()
+
+	assert.NotNil(t, actualClient)
+	assert.Nil(t, actualError)
+}
