@@ -30,14 +30,6 @@ var (
 	clientSecret string = "set_by_init"
 )
 
-func init() {
-	var err error
-	clientId, clientSecret, err = loadOAuthConfig()
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 func GithubOAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		state := ctx.Request.FormValue("state")
@@ -55,6 +47,11 @@ func GithubOAuth() gin.HandlerFunc {
 			ctx.Next()
 		}
 	}
+}
+
+func ReadConfig() (err error) {
+	clientId, clientSecret, err = loadOAuthConfig()
+	return err
 }
 
 func redirectToGithubOAuth(ctx *gin.Context) {

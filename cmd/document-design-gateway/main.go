@@ -20,9 +20,13 @@ func main() {
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
-	err := document.ReadConfig()
-	if err != nil {
-		log.Fatal(err)
+	documentServiceConfigError := document.ReadConfig()
+	if documentServiceConfigError != nil {
+		log.Fatal(documentServiceConfigError)
+	}
+	oauthConfigError := oauth.ReadConfig()
+	if oauthConfigError != nil {
+		log.Fatal(oauthConfigError)
 	}
 
 	authorized := router.Group("/")
