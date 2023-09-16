@@ -2,6 +2,7 @@ package document
 
 import (
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -15,6 +16,7 @@ import (
 	ginfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/gin"
 	ginmocks "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/gin/mocks"
 	"github.com/stretchr/testify/assert"
+	testifymock "github.com/stretchr/testify/mock"
 )
 
 const expectedEndpoint string = "/document/preview"
@@ -30,6 +32,9 @@ func TestGeneratePreview_RequestIsNil(t *testing.T) {
 }
 
 func TestGeneratePreview_DialError(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
 	mockDocumentServiceGateway.SetupDocumentServiceGatewayToReturnDialError()
 	documentServiceGateway = mockDocumentServiceGateway
@@ -48,6 +53,9 @@ func TestGeneratePreview_DialError(t *testing.T) {
 }
 
 func TestGeneratePreview_ValidRequest(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	mediaType := "application/pdf"
 	size := uint64(134034)
 	extension := ".pdf"
@@ -91,6 +99,9 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 }
 
 func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	closingError := errors.New("error while closing")
 
 	mediaType := "application/pdf"
@@ -132,6 +143,9 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 }
 
 func TestGeneratePreview_ErrorWhileConnecting(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	connectingError := errors.New("error while receiving")
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
@@ -153,6 +167,9 @@ func TestGeneratePreview_ErrorWhileConnecting(t *testing.T) {
 }
 
 func TestGeneratePreview_ErrorFromStreamWhileWaitingForMetadata(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	receivingError := errors.New("error while receiving")
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
@@ -176,6 +193,9 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForMetadata(t *testing.T) {
 }
 
 func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	receivingError := errors.New("error while receiving")
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
@@ -200,6 +220,9 @@ func TestGeneratePreview_ErrorFromStreamWhileWaitingForFile(t *testing.T) {
 }
 
 func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
 	documentServiceGateway = mockDocumentServiceGateway
 	mockClient := mocks.NewDocumentServiceClient(t)
@@ -221,6 +244,9 @@ func TestGeneratePreview_ChunkSentBeforeMetadata(t *testing.T) {
 }
 
 func TestGeneratePreview_MetadataIsSentTwice(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
 	documentServiceGateway = mockDocumentServiceGateway
 	mockClient := mocks.NewDocumentServiceClient(t)
@@ -243,6 +269,9 @@ func TestGeneratePreview_MetadataIsSentTwice(t *testing.T) {
 }
 
 func TestGeneratePreview_HttpContextWriterError(t *testing.T) {
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
 	writerError := errors.New("error while writing into http respnse")
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
@@ -266,6 +295,52 @@ func TestGeneratePreview_HttpContextWriterError(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusInternalServerError, response.Code)
+
+	t.Cleanup(Cleanup)
+}
+
+func TestGeneratePreview_IsRateLimited(t *testing.T) {
+	limitedAfter := int(4)
+	t.Setenv(hostEnv, "http://localhost")
+	t.Setenv(portEnv, "8080")
+
+	var lastResponse *httptest.ResponseRecorder
+	for i := 0; i < limitedAfter; i++ {
+		mediaType := "application/pdf"
+		size := uint64(134034)
+		extension := ".pdf"
+		expectedFile := []byte{84, 104, 101, 32, 97, 110, 115, 119, 101, 114, 32, 105, 115, 32, 52, 50}
+
+		mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
+		documentServiceGateway = mockDocumentServiceGateway
+		mockClient := mocks.NewDocumentServiceClient(t)
+		mockStream := mocks.NewDocumentService_GeneratePreviewClient(t)
+		mockDocumentServiceGateway.EXPECT().CreateDocumentServiceClient().Return(mockClient, nil).Maybe()
+		mockClient.EXPECT().GeneratePreview(testifymock.Anything, testifymock.Anything).Return(mockStream, nil).Maybe()
+		mockStream.EXPECT().Recv().
+			Return(fixture.NewGeneratePreviewResponseMetadataBuilder().
+				WithMediaType(mediaType).
+				WithSize(size).
+				WithExtension(extension).
+				Build(), nil).Maybe()
+		mockStream.EXPECT().Recv().Return(fixture.NewGeneratePreviewResponseChunkBuilder().WithChunk(expectedFile[0:6]).Build(), nil).Maybe()
+		mockStream.EXPECT().Recv().Return(fixture.NewGeneratePreviewResponseChunkBuilder().WithChunk(expectedFile[6:11]).Build(), nil).Maybe()
+		mockStream.EXPECT().Recv().Return(fixture.NewGeneratePreviewResponseChunkBuilder().WithChunk(expectedFile[11:cap(expectedFile)]).Build(), nil).Maybe()
+
+		mockStream.EXPECT().Recv().Return(nil, io.EOF).Maybe()
+		mockStream.EXPECT().CloseSend().Return(nil).Maybe()
+
+		response := httptest.NewRecorder()
+		context := ginfixture.CreateContext(response)
+		request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, strings.NewReader(fixture.CreateValidGeneratePreviewRequest()))
+		context.Request = request
+
+		GeneratePreview(context)
+
+		lastResponse = response
+	}
+
+	assert.Equal(t, http.StatusTooManyRequests, lastResponse.Code)
 
 	t.Cleanup(Cleanup)
 }

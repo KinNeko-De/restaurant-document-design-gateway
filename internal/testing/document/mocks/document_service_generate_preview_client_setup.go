@@ -7,7 +7,6 @@ import (
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/document"
 )
 
-
 func (mock *DocumentService_GeneratePreviewClient) SetupStreamValidChunk() {
 	response := document.NewGeneratePreviewResponseChunkBuilder().Build()
 	mock.SetupStreamResponse(response)
@@ -26,8 +25,6 @@ func (mock *DocumentService_GeneratePreviewClient) SetupEndOfResponse() {
 	mock.EXPECT().Recv().Return(nil, io.EOF).Once()
 }
 
-
 func (mock *DocumentService_GeneratePreviewClient) SetupStreamClose() {
 	mock.EXPECT().CloseSend().Return(nil).Once()
 }
-
