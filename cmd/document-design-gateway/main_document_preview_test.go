@@ -1,14 +1,16 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
+	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
 	mainfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/main"
 )
 
@@ -26,36 +28,34 @@ func TestDocumentPreview_RequestIsNil(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, response.Code)
 }
 
-func readResponse[K any](t *testing.T, response *http.Response) K {
-	data := ReadAllBytes(t, response)
-	actualResponse := decodeToJson[K](t, data)
-	return actualResponse
-}
-
-func ReadAllBytes(t *testing.T, response *http.Response) []byte {
-	data, err := io.ReadAll(response.Body)
-	if err != nil {
-		t.Errorf("Unable to read response body %v", err)
+func TestDocumentPreview_GatewayConfigIsMissing(t *testing.T) {
+	if os.Getenv("EXECUTE") == "1" {
+		main()
+		return
 	}
-	return data
+
+	t.Setenv(oauth.ClientIdEnv, "1234567890")
+	t.Setenv(oauth.ClientSecretEnv, "1234567890")
+	cmd := exec.Command(os.Args[0], "-test.run=TestDocumentPreview_GatewayConfigIsMissing")
+	cmd.Env = append(os.Environ(), "EXECUTE=1")
+	err := cmd.Run()
+	require.NotNil(t, err)
+	exitCode := err.(*exec.ExitError).ExitCode()
+	assert.Equal(t, 1, exitCode)
 }
 
-func decodeToJson[K any](t *testing.T, data []byte) K {
-	var actualResponse K
-	err := json.Unmarshal(
-		data,
-		&actualResponse,
-	)
-	if err != nil {
-		str1 := string(data[:])
-		t.Errorf("Response can not be read to expected response %v. Raw: %s", err, str1)
+func TestDocumentPreview_OAuthConfigIsMissing(t *testing.T) {
+	if os.Getenv("EXECUTE") == "1" {
+		main()
+		return
 	}
-	return actualResponse
-}
 
-func createRequest(requestIdParameter string, requestIdValue string) string {
-	request := `{
-  "` + requestIdParameter + `": "` + requestIdValue + `"
-}`
-	return request
+	t.Setenv(document.HostEnv, "http://localhost")
+	t.Setenv(document.PortEnv, "8080")
+	cmd := exec.Command(os.Args[0], "-test.run=TestDocumentPreview_OAuthConfigIsMissing")
+	cmd.Env = append(os.Environ(), "EXECUTE=1")
+	err := cmd.Run()
+	require.NotNil(t, err)
+	exitCode := err.(*exec.ExitError).ExitCode()
+	assert.Equal(t, 1, exitCode)
 }

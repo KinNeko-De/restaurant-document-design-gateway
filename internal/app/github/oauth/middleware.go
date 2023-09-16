@@ -21,8 +21,8 @@ import (
 	oauthgithub "golang.org/x/oauth2/github"
 )
 
-const clientIdEnv = "GITHUBOAUTH_CLIENTID"
-const clientSecretEnv = "GITHUBOAUTH_CLIENTSECRET"
+const ClientIdEnv = "GITHUBOAUTH_CLIENTID"
+const ClientSecretEnv = "GITHUBOAUTH_CLIENTSECRET"
 
 var (
 	cache        sync.Map
@@ -141,14 +141,14 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 }
 
 func loadOAuthConfig() (clientId string, clientSecret string, err error) {
-	clientId, found := os.LookupEnv(clientIdEnv)
+	clientId, found := os.LookupEnv(ClientIdEnv)
 	if !found {
-		err = errors.New("service host to generate documents is not configured. Expect environment variable " + clientIdEnv)
+		err = errors.New("service host to generate documents is not configured. Expect environment variable " + ClientIdEnv)
 		return
 	}
-	clientSecret, found = os.LookupEnv(clientSecretEnv)
+	clientSecret, found = os.LookupEnv(ClientSecretEnv)
 	if !found {
-		err = errors.New("service port to generate documents is not configured. Expect environment variable " + clientSecretEnv)
+		err = errors.New("service port to generate documents is not configured. Expect environment variable " + ClientSecretEnv)
 		return
 	}
 
