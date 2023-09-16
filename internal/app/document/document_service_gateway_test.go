@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestReadConfig_EverythingIsMissing(t *testing.T) {
+	actualError := ReadConfig()
+	assert.NotNil(t, actualError)
+}
+
 func TestLoadApiDocumentServiceConfig_HostIsMissing(t *testing.T) {
 	t.Setenv(PortEnv, "8080")
 
