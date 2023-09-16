@@ -20,6 +20,10 @@ func main() {
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
+	err := document.ReadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	authorized := router.Group("/")
 	authorized.Use(oauth.GithubOAuth())

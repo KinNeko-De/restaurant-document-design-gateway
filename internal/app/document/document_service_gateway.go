@@ -2,7 +2,6 @@ package document
 
 import (
 	"errors"
-	"log"
 	"os"
 
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
@@ -14,12 +13,8 @@ const hostEnv = "DOCUMENTGENERATESERVICE_HOST"
 const portEnv = "DOCUMENTGENERATESERVICE_PORT"
 
 var (
-	apiDocumentServiceUrl string = "set_by_init"
+	apiDocumentServiceUrl string = "set_by_read_config"
 )
-
-func init() {
-	readConfig()
-}
 
 type DocumentServiceGateway interface {
 	CreateDocumentServiceClient() (apiRestaurantDocument.DocumentServiceClient, error)
@@ -37,12 +32,14 @@ func (DocumentServiceGateKeeper) CreateDocumentServiceClient() (apiRestaurantDoc
 	return client, nil
 }
 
-func readConfig() {
+func ReadConfig() error {
 	connection, err := loadApiDocumentServiceConfig()
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	apiDocumentServiceUrl = connection
+
+	return nil
 }
 
 func loadApiDocumentServiceConfig() (string, error) {
