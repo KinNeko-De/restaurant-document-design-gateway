@@ -14,5 +14,7 @@ func CreateContext(response *httptest.ResponseRecorder) *gin.Context {
 		Header: make(http.Header),
 	}
 
+	ctx.Set("userId", "1234567890")
+
 	return ctx
 }

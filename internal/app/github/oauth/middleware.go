@@ -124,8 +124,8 @@ func getUserId(ctx *gin.Context, state string, code string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("json.MarshlIndent() failed with %s", err.Error())
 	}
-	fmt.Printf("User:\n%s\n", string(contents))
-	fmt.Printf("User ID: %d", *user.ID)
+	fmt.Printf("User:\n%s\n", string(contents)) // TODO: Debug
+	fmt.Printf("User ID: %d", *user.ID)         // TODO: debug
 	return strconv.FormatInt(*user.ID, 10), nil
 }
 

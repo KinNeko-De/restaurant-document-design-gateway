@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -40,7 +41,12 @@ func GeneratePreview(ctx *gin.Context) {
 }
 
 func GeneratePreviewDemo(ctx *gin.Context) {
-	if requestNotLimited(ctx.Keys["userId"].(string)) {
+	userId := ctx.Keys["userId"]
+	if userId == nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user id is not set"})
+		return
+	}
+	if requestNotLimited(userId.(string)) {
 		previewRequest := generateTestDocument()
 		err := generatePreview(ctx, previewRequest)
 		if err != nil {
@@ -66,7 +72,7 @@ func createRateLimiter() *rate.Limiter {
 }
 
 func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.GeneratePreviewRequest) (err error) {
-	fileName := uuid.New().String()
+	fileName := strings.ReplaceAll(uuid.New().String(), "-", "")
 	client, err := documentServiceGateway.CreateDocumentServiceClient()
 	if err != nil {
 		ctx.JSON(http.StatusServiceUnavailable, err)

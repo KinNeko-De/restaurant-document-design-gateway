@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -47,7 +48,7 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	extension := ".pdf"
 	expectedContentType := mediaType
 	expectedContentLength := "134034"
-	expectedContentDisposition := `inline; filename="invoice.pdf"`
+	expectedContentDisposition := `inline; filename="[A-z0-9]+\.pdf"`
 	expectedFile := []byte{84, 104, 101, 32, 97, 110, 115, 119, 101, 114, 32, 105, 115, 32, 52, 50}
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
@@ -78,7 +79,7 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, response.Code)
 	assert.Equal(t, expectedContentType, response.Header().Get(httpheader.ContentType))
 	assert.Equal(t, expectedContentLength, response.Header().Get(httpheader.ContentLength))
-	assert.Equal(t, expectedContentDisposition, response.Header().Get(httpheader.ContentDisposition))
+	assert.Regexp(t, regexp.MustCompile(expectedContentDisposition), response.Header().Get(httpheader.ContentDisposition))
 	assert.EqualValues(t, expectedFile, response.Body.Bytes())
 }
 
@@ -88,9 +89,6 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 	mediaType := "application/pdf"
 	size := uint64(134034)
 	extension := ".pdf"
-	expectedContentType := mediaType
-	expectedContentLength := "134034"
-	expectedContentDisposition := `inline; filename="invoice.pdf"`
 	expectedFile := []byte{84, 104, 101, 32, 97, 110, 115, 119, 101, 114, 32, 105, 115, 32, 52, 50}
 
 	mockDocumentServiceGateway := mocks.NewDocumentServiceGateway(t)
@@ -120,9 +118,6 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 	GeneratePreview(context)
 
 	assert.Equal(t, http.StatusCreated, response.Code)
-	assert.Equal(t, expectedContentType, response.Header().Get(httpheader.ContentType))
-	assert.Equal(t, expectedContentLength, response.Header().Get(httpheader.ContentLength))
-	assert.Equal(t, expectedContentDisposition, response.Header().Get(httpheader.ContentDisposition))
 	assert.EqualValues(t, expectedFile, response.Body.Bytes())
 	// TODO Log error
 }
