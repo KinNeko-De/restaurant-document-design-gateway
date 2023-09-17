@@ -34,7 +34,7 @@ func GithubOAuth() gin.HandlerFunc {
 			err := writeUserIdToContext(ctx, state, code)
 			if err != nil {
 				log.Println(err)
-				ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user can not be unauthorized. refresh the page without code and state"})
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user can not be unauthorized. refresh the page without code and state"})
 				return
 			}
 			ctx.Next()
@@ -54,6 +54,7 @@ func redirectToGithubOAuth(ctx *gin.Context) {
 	cache.Store(oauthStateString, time.Now())
 	url := githubOauthConfig.AuthCodeURL(oauthStateString)
 	http.Redirect(ctx.Writer, ctx.Request, url, http.StatusTemporaryRedirect)
+	ctx.Abort()
 }
 
 func getRedirectUrl(ctx *gin.Context) string {
