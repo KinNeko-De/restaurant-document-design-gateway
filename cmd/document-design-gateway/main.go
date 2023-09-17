@@ -25,7 +25,6 @@ func main() {
 
 func StartHttpServer() {
 	router := setupRouter()
-	configRoutes(router)
 
 	err := router.Run(":8080")
 	if err != nil {
@@ -34,6 +33,12 @@ func StartHttpServer() {
 }
 
 func setupRouter() *gin.Engine {
+	router := createRouter()
+	configRoutes(router)
+	return router
+}
+
+func createRouter() *gin.Engine {
 	router := gin.New()
 	router.Use(operation.GinLogger())
 	router.Use(gin.Recovery())

@@ -11,10 +11,10 @@ import (
 	mainfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/main"
 )
 
-const expectedEndpoint string = "/document/preview"
-
 // tests that the service is mapped to the expected expectedEndpoint (no code coverage)
-func TestDocumentPreview_RequestIsNil(t *testing.T) {
+func TestDocumentPreview_DocumentPreviewIsMapped(t *testing.T) {
+	const expectedEndpoint string = "/document/preview"
+
 	t.Setenv(document.HostEnv, "http://localhost")
 	t.Setenv(document.PortEnv, "8080")
 	t.Setenv(oauth.ClientIdEnv, "1234567890")
@@ -24,5 +24,6 @@ func TestDocumentPreview_RequestIsNil(t *testing.T) {
 
 	response := mainfixture.SendRequestToSut(setupRouter(), request)
 
-	assert.Equal(t, http.StatusBadRequest, response.Code)
+	// because of authentication, the response should be a redirect
+	assert.Equal(t, http.StatusTemporaryRedirect, response.Code)
 }
