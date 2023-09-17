@@ -13,9 +13,9 @@ type LoggerConfig struct {
 	// Optional.
 	SkipPaths []string
 
-	// LogLevel for everything else than errors
+	// LogLevel for every request other than error
 	// Optional. Default value is zerolog.DebugLevel
-	DefaultLogLevel zerolog.Level
+	RequestLogLevel zerolog.Level
 }
 
 func GinLogger() gin.HandlerFunc {
@@ -91,7 +91,7 @@ func createLogEvent(c *gin.Context, conf LoggerConfig) *zerolog.Event {
 	if c.Writer.Status() >= 500 {
 		logEvent = Logger.Error()
 	} else {
-		logEvent = Logger.WithLevel(conf.DefaultLogLevel)
+		logEvent = Logger.WithLevel(conf.RequestLogLevel)
 	}
 	return logEvent
 }
