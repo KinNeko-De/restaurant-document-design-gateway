@@ -23,3 +23,8 @@ Never write useless tests to get high code coverage.
 [![codecov](https://codecov.io/gh/KinNeko-De/restaurant-document-design-gateway/branch/main/graph/badge.svg?token=BoDmQQ8ol7)](https://codecov.io/gh/KinNeko-De/restaurant-document-design-gateway)
 
 Tests need to be maintained as normal code. Keep that in mind while you write tests.
+
+# Rate limit for access for demonstration
+As it is planned to provide a public demonstration, a github account is needed to access the endpoints. Each github account can generate up to three document every hour.
+
+The application needs access to your github user id because of that.

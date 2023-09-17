@@ -5,7 +5,7 @@ on:
       - 'documentation/**'
 
 env:
-  MAJOR_MINOR_PATCH: 0.1.0
+  MAJOR_MINOR_PATCH: 0.2.0
   GIN_MODE: release
   MAIN_PACKAGE: 'cmd/document-design-gateway/main.go'
 
@@ -24,7 +24,7 @@ jobs:
       - name: Install go
         uses: actions/setup-go@v3
         with:
-          go-version: '^1.20.0'
+          go-version: '^1.21.0'
       - name: "Installed go version"
         run: go version
       - uses: actions/checkout@v3
@@ -72,7 +72,11 @@ jobs:
           go build -o bin/app ./${{ env.MAIN_PACKAGE }}
       - name: "Test"
         run: |
-          go test ./... -race -coverprofile=coverage.out
+          go test ./... -race -coverprofile=coverage.out -timeout 5m
+      - name: "Exclude codecoverage"
+        run: |
+          grep -v -E -f .covignore coverage.out > coverage.filtered.out
+          mv coverage.filtered.out coverage.out
       - name: "Code coverage"
         uses: codecov/codecov-action@v3
       - name: "Build artifacts"
@@ -82,3 +86,13 @@ jobs:
           file: ./build/dockerfile
           push: false
           tags: ${{ steps.semantic_version.outputs.semantic_version }} # on push later
+      - name: Create semantic versioning git tag for golang
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/v${{ steps.semantic_version.outputs.semantic_version }}",
+               sha: context.sha
+             })
