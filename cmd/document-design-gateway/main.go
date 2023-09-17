@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
@@ -31,7 +29,7 @@ func StartHttpServer() {
 
 	err := router.Run(":8080")
 	if err != nil {
-		log.Fatal(err)
+		operation.Logger.Fatal().Err(err).Msg("Failed to start http server")
 	}
 }
 
