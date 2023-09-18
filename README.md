@@ -8,7 +8,7 @@ Every time you push something a [ci pipeline](.github/workflows/ci.yml) will run
 [![restaurant-document-design-gateway-ci](https://github.com/KinNeko-De/restaurant-document-design-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/KinNeko-De/restaurant-document-design-gateway/actions/workflows/ci.yml)
 
 # Logging
-Is out of scope for now.
+The application uses structured logging. It logs to the console for usage in kubernetes.
 
 # Metrics
 Is out of scope for now.

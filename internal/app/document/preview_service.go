@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -17,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
 	"golang.org/x/time/rate"
@@ -50,7 +50,7 @@ func GeneratePreviewDemo(ctx *gin.Context) {
 		previewRequest := generateTestDocument()
 		err := generatePreview(ctx, previewRequest)
 		if err != nil {
-			log.Println(err)
+			operation.Logger.Error().Err(err).Msg("Failed to generate preview")
 		}
 	} else {
 		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded. try again later"})

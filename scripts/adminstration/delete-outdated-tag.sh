@@ -18,3 +18,5 @@ do
     git push origin --delete $tag
   fi
 done
+
+read -p "Press any key to end..."
