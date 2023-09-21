@@ -24,20 +24,26 @@ var (
 
 func GithubOAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		if ctx.Request == nil {
+			redirectToGithubOAuth(ctx)
+			return
+		}
+
 		state := ctx.Request.FormValue("state")
 		code := ctx.Request.FormValue("code")
 		if state == "" || code == "" {
 			redirectToGithubOAuth(ctx)
 			return
-		} else {
-			err := writeUserIdToContext(ctx, state, code)
-			if err != nil {
-				operation.Logger.Error().Err(err).Msg("Failed to write user id to context")
-				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user can not be unauthorized. refresh the page without code and state"})
-				return
-			}
-			ctx.Next()
 		}
+
+		err := writeUserIdToContext(ctx, state, code)
+		if err != nil {
+			operation.Logger.Error().Err(err).Msg("Failed to write user id to context")
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user can not be unauthorized. refresh the page without code and state"})
+			return
+		}
+
+		ctx.Next()
 	}
 }
 
@@ -69,6 +75,7 @@ func writeUserIdToContext(ctx *gin.Context, state string, code string) error {
 	if err != nil {
 		return err
 	}
+
 	ctx.Set("userId", userId)
 	return nil
 }
