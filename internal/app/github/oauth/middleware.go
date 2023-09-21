@@ -67,7 +67,7 @@ func getRedirectUrl(ctx *gin.Context) string {
 	if ctx.Request.TLS != nil {
 		scheme = "https"
 	}
-	return scheme + "://" + path.Join(ctx.Request.Host, ctx.FullPath())
+	return scheme + "://" + path.Join(ctx.Request.Host, ctx.Request.URL.Path)
 }
 
 func writeUserIdToContext(ctx *gin.Context, state string, code string) error {
