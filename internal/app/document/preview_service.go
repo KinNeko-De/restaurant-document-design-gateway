@@ -46,23 +46,27 @@ func GeneratePreviewDemo(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user id is not set"})
 		return
 	}
-	if requestNotLimited(userId.(string)) {
-		previewRequest := generateTestDocument()
-		err := generatePreview(ctx, previewRequest)
-		if err != nil {
-			operation.Logger.Error().Err(err).Msg("Failed to generate preview")
-		}
-	} else {
+	if requestIsLimited(userId.(string)) {
 		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded. try again later"})
+		return
 	}
+
+	previewRequest := generateTestDocument()
+	err := generatePreview(ctx, previewRequest)
+	if err != nil {
+		operation.Logger.Error().Err(err).Msg("Failed to call document service")
+		ctx.JSON(http.StatusServiceUnavailable, gin.H{"error": "the document service is not available"})
+	}
+
+	ctx.Status(http.StatusCreated)
 }
 
-func requestNotLimited(userId string) bool {
+func requestIsLimited(userId string) bool {
 	rateLimiter, _ := rateLimiters.LoadOrStore(userId, createRateLimiter())
 	if rateLimiter.(*rate.Limiter).Allow() {
-		return true
-	} else {
 		return false
+	} else {
+		return true
 	}
 }
 
