@@ -79,7 +79,7 @@ func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.Gen
 	fileName := strings.ReplaceAll(uuid.New().String(), "-", "")
 	client, err := documentServiceGateway.CreateDocumentServiceClient()
 	if err != nil {
-		ctx.JSON(http.StatusServiceUnavailable, err)
+		ctx.AbortWithError(http.StatusServiceUnavailable, err)
 		return
 	}
 
