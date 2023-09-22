@@ -54,8 +54,8 @@ func GeneratePreviewDemo(ctx *gin.Context) {
 	previewRequest := generateTestDocument()
 	err := generatePreview(ctx, previewRequest)
 	if err != nil {
-		operation.Logger.Error().Err(err).Msg("Failed to call document service")
-		ctx.JSON(http.StatusServiceUnavailable, gin.H{"error": "the document service is not available"})
+		operation.Logger.Error().Err(err).Msg("Failed to generate preview")
+		return
 	}
 
 	ctx.Status(http.StatusCreated)
@@ -115,17 +115,20 @@ func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.Gen
 			break
 		}
 		if requestErr != nil {
+			err = requestErr
 			ctx.AbortWithError(http.StatusInternalServerError, requestErr)
 			break
 		}
 		if somethingElseThanChunkWasSent(current) {
-			ctx.AbortWithError(http.StatusInternalServerError, errors.New("FileCase of type 'apiDocumentService.GeneratePreviewResponse_Chunk' expected. Actual value is "+reflect.TypeOf(current.File).String()+"."))
+			err = fmt.Errorf("FileCase of type 'apiDocumentService.GeneratePreviewResponse_Chunk' expected. Actual value is %s", reflect.TypeOf(current.File).String())
+			ctx.AbortWithError(http.StatusInternalServerError, err)
 			break
 		}
 
 		var chunk = current.GetChunk()
 		_, bodyWriteErr := ctx.Writer.Write(chunk)
 		if bodyWriteErr != nil {
+			err = bodyWriteErr
 			ctx.AbortWithError(http.StatusInternalServerError, bodyWriteErr)
 			break
 		}
