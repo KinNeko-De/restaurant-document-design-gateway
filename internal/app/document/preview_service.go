@@ -50,8 +50,7 @@ func GeneratePreviewDemo(ctx *gin.Context) {
 		previewRequest := generateTestDocument()
 		err := generatePreview(ctx, previewRequest)
 		if err != nil {
-			operation.Logger.Error().Err(err).Msg("Failed to call document service")
-			ctx.JSON(http.StatusServiceUnavailable, gin.H{"error": "the document service is not available"})
+			operation.Logger.Error().Err(err).Msg("Failed to generate preview")
 		}
 	} else {
 		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded. try again later"})
