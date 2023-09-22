@@ -106,13 +106,12 @@ func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.Gen
 	ctx.Status(http.StatusCreated)
 
 	for {
-		current, done, requestErr := readNextResponse(stream)
+		current, done, err := readNextResponse(stream)
 		if done {
 			break
 		}
-		if requestErr != nil {
-			err = requestErr
-			ctx.AbortWithError(http.StatusInternalServerError, requestErr)
+		if err != nil {
+			ctx.AbortWithError(http.StatusInternalServerError, err)
 			break
 		}
 		if somethingElseThanChunkWasSent(current) {
@@ -122,10 +121,9 @@ func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.Gen
 		}
 
 		var chunk = current.GetChunk()
-		_, bodyWriteErr := ctx.Writer.Write(chunk)
-		if bodyWriteErr != nil {
-			err = bodyWriteErr
-			ctx.AbortWithError(http.StatusInternalServerError, bodyWriteErr)
+		_, err = ctx.Writer.Write(chunk)
+		if err != nil {
+			ctx.AbortWithError(http.StatusInternalServerError, err)
 			break
 		}
 	}
