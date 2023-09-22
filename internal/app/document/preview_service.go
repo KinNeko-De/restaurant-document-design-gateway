@@ -58,7 +58,7 @@ func GeneratePreviewDemo(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.Status(http.StatusOK)
 }
 
 func requestIsLimited(userId string) bool {
