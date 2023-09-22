@@ -63,11 +63,7 @@ func GeneratePreviewDemo(ctx *gin.Context) {
 
 func requestIsLimited(userId string) bool {
 	rateLimiter, _ := rateLimiters.LoadOrStore(userId, createRateLimiter())
-	if rateLimiter.(*rate.Limiter).Allow() {
-		return false
-	} else {
-		return true
-	}
+	return !rateLimiter.(*rate.Limiter).Allow()
 }
 
 func createRateLimiter() *rate.Limiter {
@@ -132,7 +128,6 @@ func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.Gen
 			ctx.AbortWithError(http.StatusInternalServerError, bodyWriteErr)
 			break
 		}
-
 	}
 
 	return
