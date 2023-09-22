@@ -37,33 +37,35 @@ func GeneratePreview(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "request can not be parsed"})
 		return
 	}
-	GeneratePreviewDemo(ctx)
+	tryToGeneratePreview(ctx)
 }
 
 func GeneratePreviewDemo(ctx *gin.Context) {
+	tryToGeneratePreview(ctx)
+}
+
+func tryToGeneratePreview(ctx *gin.Context) {
 	userId := ctx.Keys["userId"]
 	if userId == nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user id is not set"})
 		return
 	}
-	if requestNotLimited(userId.(string)) {
-		previewRequest := generateTestDocument()
-		err := generatePreview(ctx, previewRequest)
-		if err != nil {
-			operation.Logger.Error().Err(err).Msg("Failed to generate preview")
-		}
-	} else {
+	if requestIsLimited(userId.(string)) {
 		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded. try again later"})
+		return
+	}
+
+	previewRequest := generateTestDocument()
+	err := generatePreview(ctx, previewRequest)
+	if err != nil {
+		operation.Logger.Error().Err(err).Msg("Failed to generate preview")
+		return
 	}
 }
 
-func requestNotLimited(userId string) bool {
+func requestIsLimited(userId string) bool {
 	rateLimiter, _ := rateLimiters.LoadOrStore(userId, createRateLimiter())
-	if rateLimiter.(*rate.Limiter).Allow() {
-		return true
-	} else {
-		return false
-	}
+	return !rateLimiter.(*rate.Limiter).Allow()
 }
 
 func createRateLimiter() *rate.Limiter {
@@ -71,64 +73,66 @@ func createRateLimiter() *rate.Limiter {
 	return rateLimiter
 }
 
-func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.GeneratePreviewRequest) (err error) {
+func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.GeneratePreviewRequest) error {
 	fileName := strings.ReplaceAll(uuid.New().String(), "-", "")
 	client, err := documentServiceGateway.CreateDocumentServiceClient()
 	if err != nil {
-		ctx.JSON(http.StatusServiceUnavailable, err)
-		return
+		ctx.AbortWithStatus(http.StatusServiceUnavailable)
+		return err
 	}
 
 	callContext, cancelFunc := context.WithDeadline(context.Background(), timeout.GetDeadline(timeout.LongDeadline))
 	defer cancelFunc()
 	stream, err := client.GeneratePreview(callContext, previewRequest)
 	if err != nil {
-		ctx.AbortWithError(http.StatusServiceUnavailable, err)
-		return
+		ctx.AbortWithStatus(http.StatusServiceUnavailable)
+		return err
 	}
 
 	firstResponse, err := stream.Recv()
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-		return
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return err
 	}
 
 	_, ok := firstResponse.File.(*apiRestaurantDocument.GeneratePreviewResponse_Metadata)
 	if !ok {
 		err = errors.New("FileCase of type 'apidocument.DownloadDocumentResponse_Metadata' expected. Actual value is " + reflect.TypeOf(firstResponse.File).String() + ".")
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-		return
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return err
 	}
 	var metadata = firstResponse.GetMetadata()
 	ctx.Header(httpheader.ContentType, metadata.MediaType)
 	ctx.Header(httpheader.ContentLength, strconv.FormatUint(metadata.Size, 10))
 	ctx.Header(httpheader.ContentDisposition, fmt.Sprintf("inline; filename=\"%s%s\"", fileName, metadata.Extension))
-	ctx.Status(http.StatusCreated)
+	ctx.Status(http.StatusOK)
+	err = writeResponse(stream, ctx)
+	return err
+}
 
+func writeResponse(stream apiRestaurantDocument.DocumentService_GeneratePreviewClient, ctx *gin.Context) error {
 	for {
-		current, done, requestErr := readNextResponse(stream)
+		current, done, err := readNextResponse(stream)
 		if done {
 			break
 		}
-		if requestErr != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, requestErr)
-			break
+		if err != nil {
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return err
 		}
 		if somethingElseThanChunkWasSent(current) {
-			ctx.AbortWithError(http.StatusInternalServerError, errors.New("FileCase of type 'apiDocumentService.GeneratePreviewResponse_Chunk' expected. Actual value is "+reflect.TypeOf(current.File).String()+"."))
-			break
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return fmt.Errorf("FileCase of type 'apiDocumentService.GeneratePreviewResponse_Chunk' expected. Actual value is %s", reflect.TypeOf(current.File).String())
 		}
 
 		var chunk = current.GetChunk()
-		_, bodyWriteErr := ctx.Writer.Write(chunk)
-		if bodyWriteErr != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, bodyWriteErr)
-			break
+		_, err = ctx.Writer.Write(chunk)
+		if err != nil {
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return err
 		}
-
 	}
-
-	return
+	return nil
 }
 
 func generateTestDocument() *apiRestaurantDocument.GeneratePreviewRequest {

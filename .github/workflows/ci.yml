@@ -5,7 +5,7 @@ on:
       - 'documentation/**'
 
 env:
-  MAJOR_MINOR_PATCH: 0.3.0
+  MAJOR_MINOR_PATCH: 0.3.1
   GIN_MODE: release
   MAIN_PACKAGE: 'cmd/document-design-gateway/main.go'
 
@@ -79,6 +79,9 @@ jobs:
           mv coverage.filtered.out coverage.out
       - name: "Code coverage"
         uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
       - name: "Build artifacts"
         uses: docker/build-push-action@v4
         with:
