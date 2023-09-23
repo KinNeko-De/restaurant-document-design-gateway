@@ -12,10 +12,11 @@ services:
     ports:
       - "42090:8080"
     environment: 
-    - GIN_MODE=release
-    - DOCUMENTGENERATESERVICE_HOST=restaurant-document-generate-svc
-    - DOCUMENTGENERATESERVICE_PORT=3110
-
+      - GIN_MODE=release
+      - DOCUMENTGENERATESERVICE_HOST=restaurant-document-generate-svc
+      - DOCUMENTGENERATESERVICE_PORT=3110
+      - GITHUBOAUTH_CLIENTID=555b51541211ad2920da
+      - GITHUBOAUTH_CLIENTSECRET=b8ea04669ded3c146e5c7e43aecb26ba133f7d32
 networks:
   project-network:
     name: restaurant
