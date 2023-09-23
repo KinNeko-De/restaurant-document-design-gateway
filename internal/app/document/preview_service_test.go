@@ -83,7 +83,7 @@ func TestGeneratePreview_ValidRequest(t *testing.T) {
 
 	GeneratePreview(context)
 
-	assert.Equal(t, http.StatusCreated, response.Code)
+	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, expectedContentType, response.Header().Get(httpheader.ContentType))
 	assert.Equal(t, expectedContentLength, response.Header().Get(httpheader.ContentLength))
 	assert.Regexp(t, regexp.MustCompile(expectedContentDisposition), response.Header().Get(httpheader.ContentDisposition))
@@ -126,7 +126,7 @@ func TestGeneratePreview_ErrorOnClose_FileIsStillSent(t *testing.T) {
 
 	GeneratePreview(context)
 
-	assert.Equal(t, http.StatusCreated, response.Code)
+	assert.Equal(t, http.StatusOK, response.Code)
 	assert.EqualValues(t, expectedFile, response.Body.Bytes())
 	// TODO Log error
 
