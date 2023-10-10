@@ -18,6 +18,9 @@ spec:
       containers:
       - name: app
         image: localhost:32000/restaurant-document-design-gateway:latest
+        envFrom:
+        - configMapRef:
+            name: document-design-gateway-environment
         ports:
         - containerPort: 8080
         resources:

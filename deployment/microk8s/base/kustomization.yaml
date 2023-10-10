@@ -4,3 +4,14 @@ resources:
   - deployment.yaml
   - service.yaml
   - namespace.yaml # remove this later
+
+configMapGenerator:
+- name: document-design-gateway-environment
+  namespace: restaurant
+  behavior: create
+  literals:
+    - GIN_MODE=release
+    - DOCUMENTGENERATESERVICE_HOST=document-generate-svc
+    - DOCUMENTGENERATESERVICE_PORT=3110
+    - GITHUBOAUTH_CLIENTID=555b51541211ad2920da
+    - GITHUBOAUTH_CLIENTSECRET=b8ea04669ded3c146e5c7e43aecb26ba133f7d32
