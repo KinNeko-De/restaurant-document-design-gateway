@@ -9,12 +9,12 @@ spec:
     matchLabels:
       app: document-design-gateway
   template:
-    #securityContext:
-    #  runAsNonRoot: true
     metadata:
       labels:
         app: document-design-gateway
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: app
         image: localhost:32000/restaurant-document-design-gateway:latest
