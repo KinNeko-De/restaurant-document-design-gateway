@@ -5,7 +5,8 @@ metadata:
 spec:
   selector:
     app: document-design-gateway
+  type: LoadBalancer # Need metallb addon to be enabled in microk8s
   ports:
   - name: http
-    port: 8080
-    targetPort: 80
+    port: 3333
+    targetPort: 8080
