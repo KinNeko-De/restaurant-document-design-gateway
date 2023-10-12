@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: document-design-gateway
+  namespace: restaurant
 spec:
   selector:
     app: document-design-gateway
