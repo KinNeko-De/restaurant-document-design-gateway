@@ -9,5 +9,5 @@ spec:
   type: LoadBalancer # Need metallb addon to be enabled in microk8s
   ports:
   - name: http
-    port: 3333
+    port: 80
     targetPort: 8080
