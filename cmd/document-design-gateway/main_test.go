@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 	"os/exec"
+	"syscall"
 	"testing"
-	"time"
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
@@ -45,6 +45,12 @@ func TestMain_OAuthConfigIsMissing(t *testing.T) {
 }
 
 // test does not run on windows
+// test test produce no code coverage
+// In case you broke something, the test will run forever
+// In the pipeline you will see:
+// panic: test timed out after 5m0s
+// running tests:
+// TestMain_ApplicationListenToInterrupt_GracefullShutdown (5m0s)
 func TestMain_ApplicationListenToInterrupt_GracefullShutdown(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
 		main()
@@ -57,10 +63,9 @@ func TestMain_ApplicationListenToInterrupt_GracefullShutdown(t *testing.T) {
 	t.Setenv(oauth.ClientSecretEnv, "1234567890")
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ApplicationListenToInterrupt_GracefullShutdown")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
-	cmd.WaitDelay = 1 * time.Second
 	err := cmd.Start()
 	require.Nil(t, err)
-	// cmd.Process.Signal(syscall.SIGTERM)
+	cmd.Process.Signal(syscall.SIGTERM)
 	err = cmd.Wait()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
