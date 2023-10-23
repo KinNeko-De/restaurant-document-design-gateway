@@ -1,6 +1,12 @@
 package main
 
 import (
+	"context"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/gin-gonic/gin"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
@@ -9,6 +15,7 @@ import (
 
 func main() {
 	operation.SetDefaultLoggingLevel()
+	operation.Logger.Info().Msg("Starting application.")
 
 	documentServiceConfigError := document.ReadConfig()
 	if documentServiceConfigError != nil {
@@ -20,16 +27,32 @@ func main() {
 		operation.Logger.Fatal().Err(oauthConfigError).Msg("Failed to read github oauth config")
 	}
 
-	StartHttpServer()
+	httpServerStop := make(chan struct{})
+	go StartHttpServer(httpServerStop, ":8080")
+
+	<-httpServerStop
+	operation.Logger.Info().Msg("Application stopped.")
 }
 
-func StartHttpServer() {
+func StartHttpServer(httpServerStop chan struct{}, port string) {
 	router := setupRouter()
+	var gracefulStop = make(chan os.Signal, 1)
+	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
+	operation.Logger.Debug().Msgf("starting http server")
 
-	err := router.Run(":8080")
-	if err != nil {
-		operation.Logger.Fatal().Err(err).Msg("Failed to start http server")
+	server := &http.Server{Addr: port, Handler: router}
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			operation.Logger.Fatal().Err(err).Msg("Failed to start http server")
+		}
+	}()
+
+	stop := <-gracefulStop
+	if err := server.Shutdown(context.Background()); err != nil {
+		operation.Logger.Error().Err(err).Msg("Failed to shutdown http server")
 	}
+	operation.Logger.Debug().Msgf("http server stopped. Received signal %s", stop)
+	close(httpServerStop)
 }
 
 func setupRouter() *gin.Engine {
