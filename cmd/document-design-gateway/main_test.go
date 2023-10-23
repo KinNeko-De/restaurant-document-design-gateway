@@ -64,5 +64,7 @@ func TestMain_ApplicationListenToInterrupt_GracefullShutdown(t *testing.T) {
 	require.Nil(t, err)
 	cmd.Process.Signal(syscall.SIGTERM)
 	err = cmd.Wait()
-	assert.Nil(t, err)
+	require.NotNil(t, err)
+	exitCode := err.(*exec.ExitError).ExitCode()
+	assert.Equal(t, -1, exitCode)
 }
