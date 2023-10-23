@@ -53,7 +53,7 @@ func TestMain_OAuthConfigIsMissing(t *testing.T) {
 // TestMain_ApplicationListenToInterrupt_GracefullShutdown (5m0s)
 func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		go main()
+		main()
 		return
 	}
 
