@@ -51,9 +51,9 @@ func TestMain_OAuthConfigIsMissing(t *testing.T) {
 // panic: test timed out after 5m0s
 // running tests:
 // TestMain_ApplicationListenToInterrupt_GracefullShutdown (5m0s)
-func TestMain_ApplicationListenToInterrupt_GracefullShutdown(t *testing.T) {
+func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		main()
+		go main()
 		return
 	}
 
@@ -61,7 +61,7 @@ func TestMain_ApplicationListenToInterrupt_GracefullShutdown(t *testing.T) {
 	t.Setenv(document.PortEnv, "8080")
 	t.Setenv(oauth.ClientIdEnv, "1234567890")
 	t.Setenv(oauth.ClientSecretEnv, "1234567890")
-	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ApplicationListenToInterrupt_GracefullShutdown")
+	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Start()
 	require.Nil(t, err)
