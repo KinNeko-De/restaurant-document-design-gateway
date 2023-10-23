@@ -32,6 +32,7 @@ func main() {
 
 	<-httpServerStop
 	operation.Logger.Info().Msg("Application stopped.")
+	os.Exit(0)
 }
 
 func StartHttpServer(httpServerStop chan struct{}, port string) {

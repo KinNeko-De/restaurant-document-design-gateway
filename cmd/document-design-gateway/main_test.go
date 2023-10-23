@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
@@ -56,8 +57,10 @@ func TestMain_ApplicationListenToInterrupt_GracefullShutdown(t *testing.T) {
 	t.Setenv(oauth.ClientSecretEnv, "1234567890")
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ApplicationListenToInterrupt_GracefullShutdown")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
+	cmd.WaitDelay = 1 * time.Second
 	err := cmd.Start()
 	require.Nil(t, err)
+
 	cmd.Process.Signal(syscall.SIGTERM)
 	err = cmd.Wait()
 	exitCode := err.(*exec.ExitError).ExitCode()
