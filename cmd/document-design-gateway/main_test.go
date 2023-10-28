@@ -26,7 +26,7 @@ func TestMain_GatewayConfigIsMissing(t *testing.T) {
 	err := cmd.Run()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 1, exitCode)
+	assert.Equal(t, 40, exitCode)
 }
 
 func TestMain_OAuthConfigIsMissing(t *testing.T) {
@@ -39,10 +39,11 @@ func TestMain_OAuthConfigIsMissing(t *testing.T) {
 	t.Setenv(document.PortEnv, "8080")
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_OAuthConfigIsMissing")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
-	err := cmd.Run()
+	cmd.Start()
+	err := cmd.Wait()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 1, exitCode)
+	assert.Equal(t, 41, exitCode)
 }
 
 // test does not run on windows

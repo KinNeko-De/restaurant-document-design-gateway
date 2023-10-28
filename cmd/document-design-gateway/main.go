@@ -19,12 +19,14 @@ func main() {
 
 	documentServiceConfigError := document.ReadConfig()
 	if documentServiceConfigError != nil {
-		operation.Logger.Fatal().Err(documentServiceConfigError).Msg("Failed to read document service config")
+		operation.Logger.Error().Err(documentServiceConfigError).Msg("Failed to read document service config")
+		os.Exit(40)
 	}
 
 	oauthConfigError := oauth.ReadConfig()
 	if oauthConfigError != nil {
-		operation.Logger.Fatal().Err(oauthConfigError).Msg("Failed to read github oauth config")
+		operation.Logger.Error().Err(oauthConfigError).Msg("Failed to read github oauth config")
+		os.Exit(41)
 	}
 
 	httpServerStop := make(chan struct{})
