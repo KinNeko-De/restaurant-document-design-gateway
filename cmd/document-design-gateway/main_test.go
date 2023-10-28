@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
@@ -65,9 +66,10 @@ func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Start()
 	require.Nil(t, err)
+	time.Sleep(1 * time.Second)
 	cmd.Process.Signal(syscall.SIGTERM)
 	err = cmd.Wait()
-	require.NotNil(t, err)
-	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, -1, exitCode)
+	require.Nil(t, err)
+	exitCode := cmd.ProcessState.ExitCode()
+	assert.Equal(t, 0, exitCode)
 }
