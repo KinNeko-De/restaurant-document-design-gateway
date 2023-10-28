@@ -37,18 +37,12 @@ func TestMain_OAuthConfigIsMissing(t *testing.T) {
 
 	t.Setenv(document.HostEnv, "http://localhost")
 	t.Setenv(document.PortEnv, "8080")
-	t.Setenv(oauth.ClientIdEnv, "1234567890")
-	t.Setenv(oauth.ClientSecretEnv, "1234567890")
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_OAuthConfigIsMissing")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
-	go func() {
-		time.Sleep(1 * time.Second)
-		cmd.Process.Signal(syscall.SIGINT)
-	}()
 	err := cmd.Run()
-	require.Nil(t, err)
-	exitCode := cmd.ProcessState.ExitCode()
-	assert.Equal(t, 0, exitCode)
+	require.NotNil(t, err)
+	exitCode := err.(*exec.ExitError).ExitCode()
+	assert.Equal(t, 1, exitCode)
 }
 
 // test does not run on windows
