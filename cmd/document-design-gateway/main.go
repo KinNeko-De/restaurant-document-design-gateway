@@ -30,13 +30,14 @@ func main() {
 	}
 
 	httpServerStop := make(chan struct{})
-	go StartHttpServer(httpServerStop, ":8080")
+	go startHttpServer(httpServerStop, ":8080")
 
 	<-httpServerStop
 	operation.Logger.Info().Msg("Application stopped.")
+	os.Exit(50)
 }
 
-func StartHttpServer(httpServerStop chan struct{}, port string) {
+func startHttpServer(httpServerStop chan struct{}, port string) {
 	router := setupRouter()
 	var gracefulStop = make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
