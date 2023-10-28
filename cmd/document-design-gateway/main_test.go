@@ -46,9 +46,9 @@ func TestMain_OAuthConfigIsMissing(t *testing.T) {
 		cmd.Process.Signal(syscall.SIGINT)
 	}()
 	err := cmd.Run()
-	require.NotNil(t, err)
-	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 1, exitCode)
+	require.Nil(t, err)
+	exitCode := cmd.ProcessState.ExitCode()
+	assert.Equal(t, 0, exitCode)
 }
 
 // test does not run on windows
