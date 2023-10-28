@@ -41,6 +41,10 @@ func TestMain_OAuthConfigIsMissing(t *testing.T) {
 	t.Setenv(oauth.ClientSecretEnv, "1234567890")
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_OAuthConfigIsMissing")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
+	go func() {
+		time.Sleep(1 * time.Second)
+		cmd.Process.Signal(syscall.SIGINT)
+	}()
 	err := cmd.Run()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
