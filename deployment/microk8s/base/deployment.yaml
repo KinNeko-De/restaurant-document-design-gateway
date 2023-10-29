@@ -4,7 +4,7 @@ metadata:
   name: document-design-gateway
   namespace: restaurant
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: document-design-gateway

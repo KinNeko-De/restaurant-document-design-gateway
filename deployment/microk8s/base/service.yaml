@@ -6,7 +6,8 @@ metadata:
 spec:
   selector:
     app: document-design-gateway
-  type: LoadBalancer # Need metallb addon to be enabled in microk8s
+  # type: LoadBalancer # Need metallb addon to be enabled in microk8s
+  type: ClusterIP
   ports:
   - name: http
     port: 80

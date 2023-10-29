@@ -4,6 +4,13 @@ resources:
   - deployment.yaml
   - service.yaml
   - namespace.yaml # remove this later
+  #- service-entry.yaml # remove this later
+  - gateway.yaml # remove this later
+  #- destination-rule.yaml # remove this later
+  - virtual-service.yaml # remove this later
+  # - virtual-service-2.yaml # remove this later
+  # - sidecar.yaml # remove this later
+  # - gateway-2.yaml
 
 configMapGenerator:
 - name: document-design-gateway-environment
