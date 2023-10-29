@@ -5,9 +5,9 @@ metadata:
   namespace: restaurant
 spec:
   gateways:
-  - restaurant-gateway
+  - istio-system/ingressgateway
   hosts:
-  - 192.168.0.240
+  - "192.168.0.240"
   http:
   - route:
       - destination:
