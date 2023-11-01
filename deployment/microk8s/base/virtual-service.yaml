@@ -17,7 +17,7 @@ spec:
   #- match:
   #  - uri:
   #      prefix: /restaurant/document
-  #    retries: # retry policy deactivated because otherwise 503 are retried with the same state.. but only when state is there
+  #    retries: # retry policy deactivated because otherwise 503 are retried with the same state.. but only when state is there but retries only on 503.. not on 500 => metric!!
   #      attempts: 0
   #  route:
   #  - destination:
