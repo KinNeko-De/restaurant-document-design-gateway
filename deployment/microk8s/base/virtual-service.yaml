@@ -7,7 +7,7 @@ spec:
   gateways:
   - istio-system/ingressgateway
   hosts:
-  - "192.168.0.240"
+  - "*"
   http:
   - route:
       - destination:
