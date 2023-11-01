@@ -93,6 +93,7 @@ func TestMain_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
 	require.Nil(t, blockingErr)
+	time.Sleep(1 * time.Second) // give the service some time to start
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ProcessAlreadyListenToPort_AppCrash")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Run()

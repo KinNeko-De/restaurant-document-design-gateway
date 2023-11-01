@@ -58,7 +58,9 @@ func tryToGeneratePreview(ctx *gin.Context) {
 	previewRequest := generateTestDocument()
 	err := generatePreview(ctx, previewRequest)
 	if err != nil {
-		operation.Logger.Error().Err(err).Msg("Failed to generate preview")
+		operation.Logger.Error().Err(err).
+			Str("apiDocumentServiceUrl", apiDocumentServiceUrl).
+			Msg("Failed to generate preview")
 		return
 	}
 }
