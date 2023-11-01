@@ -17,6 +17,8 @@ spec:
   #- match:
   #  - uri:
   #      prefix: /restaurant/document
+  #    retries: # retry policy deactivated because otherwise 503 are retried with the same state.. but only when state is there
+  #      attempts: 0
   #  route:
   #  - destination:
   #      host: document-design-gateway.restaurant.svc.cluster.local
