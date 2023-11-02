@@ -1,4 +1,4 @@
-package server
+package router
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
-	serverfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/server"
+	routerfixture "github.com/kinneko-de/restaurant-document-design-gateway/internal/testing/router"
 )
 
 // tests that the service is mapped to the expected expectedEndpoint (no code coverage)
@@ -22,7 +22,7 @@ func TestDocumentPreview_DocumentPreviewIsMapped(t *testing.T) {
 
 	request, _ := http.NewRequest(http.MethodPost, expectedEndpoint, nil)
 
-	response := serverfixture.SendRequestToSut(setupRouter(), request)
+	response := routerfixture.SendRequestToSut(SetupRouter(), request)
 
 	// because of authentication, the response should be a redirect
 	assert.Equal(t, http.StatusTemporaryRedirect, response.Code)
