@@ -16,7 +16,7 @@ import (
 	"github.com/google/uuid"
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
 	"golang.org/x/time/rate"
@@ -58,7 +58,7 @@ func tryToGeneratePreview(ctx *gin.Context) {
 	previewRequest := generateTestDocument()
 	err := generatePreview(ctx, previewRequest)
 	if err != nil {
-		operation.Logger.Error().Err(err).
+		logger.Logger.Error().Err(err).
 			Str("apiDocumentServiceUrl", apiDocumentServiceUrl).
 			Msg("Failed to generate preview")
 		return
