@@ -6,6 +6,7 @@ import (
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server"
 )
 
 func main() {
