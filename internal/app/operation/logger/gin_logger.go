@@ -1,4 +1,4 @@
-package operation
+package logger
 
 import (
 	"time"
