@@ -184,3 +184,17 @@ func waitForStatus(t *testing.T, serviceToCheck string, expectedStatus healthV1.
 	}
 	return healthResponse, err
 }
+
+func TestMain_StartGrpcServer_PortMalformed(t *testing.T) {
+	if os.Getenv("EXECUTE") == "1" {
+		startGrpcServer(make(chan struct{}), make(chan struct{}), "malformedPort")
+		return
+	}
+
+	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_PortMalformed")
+	runningApp.Env = append(os.Environ(), "EXECUTE=1")
+	err := runningApp.Run()
+	require.NotNil(t, err)
+	exitCode := err.(*exec.ExitError).ExitCode()
+	assert.Equal(t, 51, exitCode)
+}
