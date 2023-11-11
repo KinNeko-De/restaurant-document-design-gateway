@@ -211,7 +211,7 @@ func TestMain_StartGrpcServer_PortMalformed(t *testing.T) {
 
 func TestMain_StartHttpServer_PortMalformed(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		startGrpcServer(make(chan struct{}), make(chan struct{}), "malformedPort")
+		startHttpServer(make(chan struct{}), make(chan struct{}), "malformedPort")
 		return
 	}
 
