@@ -96,7 +96,7 @@ func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 	defer blockingcmd.Process.Kill()
 	require.Nil(t, blockingErr)
 
-	time.Sleep(time.Second * 5)
+	<-httpServerStarted
 
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
@@ -120,7 +120,7 @@ func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 	defer blockingcmd.Process.Kill()
 	require.Nil(t, blockingErr)
 
-	time.Sleep(time.Second * 5)
+	<-grpcServerStarted
 
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
