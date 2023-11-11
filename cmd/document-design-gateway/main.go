@@ -68,6 +68,7 @@ func startHttpServer(httpServerStarted chan struct{}, httpServerStopped chan str
 			os.Exit(50)
 		}
 	}()
+	close(httpServerStarted)
 
 	stop := <-gracefulStop
 	if err := server.Shutdown(context.Background()); err != nil {
