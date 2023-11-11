@@ -94,6 +94,7 @@ func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
+	defer blockingcmd.Process.Kill()
 	require.Nil(t, blockingErr)
 
 	time.Sleep(time.Second * 5)
@@ -104,7 +105,7 @@ func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
 	assert.Equal(t, 50, exitCode)
-	blockingcmd.Process.Kill()
+
 }
 
 func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
@@ -117,6 +118,7 @@ func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash")
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
+	defer blockingcmd.Process.Kill()
 	require.Nil(t, blockingErr)
 
 	time.Sleep(time.Second * 5)
@@ -127,7 +129,6 @@ func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
 	assert.Equal(t, 50, exitCode)
-	blockingcmd.Process.Kill()
 }
 
 func TestMain_HealtProbeIsServing_liveness(t *testing.T) {
