@@ -70,7 +70,12 @@ func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Start()
 	require.Nil(t, err)
-	time.Sleep(1 * time.Second)
+
+	serviceToCheck := "readiness" // wait until the service is ready
+	expectedStatus := healthV1.HealthCheckResponse_SERVING
+	_, healthError := waitForStatus(t, serviceToCheck, expectedStatus)
+	require.Nil(t, healthError)
+
 	cmd.Process.Signal(syscall.SIGTERM)
 	err = cmd.Wait()
 	require.Nil(t, err)
@@ -98,7 +103,12 @@ func TestMain_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
 	require.Nil(t, blockingErr)
-	time.Sleep(5 * time.Second) // give the service some time to start
+
+	serviceToCheck := "readiness" // wait until the service is ready
+	expectedStatus := healthV1.HealthCheckResponse_SERVING
+	_, healthError := waitForStatus(t, serviceToCheck, expectedStatus)
+	require.Nil(t, healthError)
+
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ProcessAlreadyListenToPort_AppCrash")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Run()
