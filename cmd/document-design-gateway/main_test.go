@@ -108,7 +108,7 @@ func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 
 func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		startGrpcServer(make(chan struct{}, make(chan struct{}), ":3110")
+		startGrpcServer(make(chan struct{}), make(chan struct{}), ":3110")
 		return
 	}
 
