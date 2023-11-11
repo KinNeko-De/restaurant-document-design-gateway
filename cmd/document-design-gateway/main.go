@@ -43,7 +43,7 @@ func main() {
 	grpcServerStarted := make(chan struct{})
 	grpcServerStopped := make(chan struct{})
 	go startHttpServer(httpServerStarted, httpServerStopped, ":8080")
-	go startGrpcServer(grpcServerStarted, grpcServerStopped, ":3110")
+	go startGrpcServer(grpcServerStarted, grpcServerStopped, "3110")
 
 	<-grpcServerStarted
 	<-httpServerStarted
