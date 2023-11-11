@@ -10,6 +10,7 @@ import (
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -85,7 +86,7 @@ func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 
 func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		startHttpServer(make(chan struct{}), make(chan struct{}), ":8080")
+		server.StartHttpServer(make(chan struct{}), make(chan struct{}), ":8080")
 		return
 	}
 
@@ -108,7 +109,7 @@ func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 
 func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		startGrpcServer(make(chan struct{}), make(chan struct{}), ":3110")
+		server.StartGrpcServer(make(chan struct{}), make(chan struct{}), ":3110")
 		return
 	}
 
@@ -208,7 +209,7 @@ func waitForStatus(t *testing.T, serviceToCheck string, expectedStatus healthV1.
 
 func TestMain_StartGrpcServer_PortMalformed(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		startGrpcServer(make(chan struct{}), make(chan struct{}), "malformedPort")
+		server.StartGrpcServer(make(chan struct{}), make(chan struct{}), "malformedPort")
 		return
 	}
 
@@ -222,7 +223,7 @@ func TestMain_StartGrpcServer_PortMalformed(t *testing.T) {
 
 func TestMain_StartHttpServer_PortMalformed(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		startHttpServer(make(chan struct{}), make(chan struct{}), "malformedPort")
+		server.StartHttpServer(make(chan struct{}), make(chan struct{}), "malformedPort")
 		return
 	}
 
