@@ -24,7 +24,7 @@ import (
 )
 
 func main() {
-	logger.SetLogLevel(zerolog.DebugLevel)
+	logger.SetLogLevel(zerolog.InfoLevel)
 	logger.Logger.Info().Msg("Starting application.")
 
 	documentServiceConfigError := document.ReadConfig()

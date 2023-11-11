@@ -83,30 +83,45 @@ func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 	assert.Equal(t, 0, exitCode)
 }
 
-// test does not run on windows
-// In case you broke something, the test will run forever
-// In the pipeline you will see:
-// panic: test timed out after 5m0s
-// running tests:
-// TestMain_ApplicationListenToInterrupt_GracefullShutdown (5m0s)
 func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	httpServerStarted := make(chan struct{})
 	if os.Getenv("EXECUTE") == "1" {
-		startHttpServer(httpServerStarted, make(chan struct{}), "3110")
+		startHttpServer(httpServerStarted, make(chan struct{}), "8080")
 		return
 	}
 
-	t.Setenv(document.HostEnv, "http://localhost")
-	t.Setenv(document.PortEnv, "8080")
-	t.Setenv(oauth.ClientIdEnv, "1234567890")
-	t.Setenv(oauth.ClientSecretEnv, "1234567890")
+	startHttpServer(httpServerStarted, make(chan struct{}), "8080")
 	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
 	require.Nil(t, blockingErr)
 
-	<-httpServerStarted
+	time.Sleep(time.Second * 5)
+
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
+	cmd.Env = append(os.Environ(), "EXECUTE=1")
+	err := cmd.Run()
+	require.NotNil(t, err)
+	exitCode := err.(*exec.ExitError).ExitCode()
+	assert.Equal(t, 50, exitCode)
+	blockingcmd.Process.Kill()
+}
+
+func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
+	grpcServerStarted := make(chan struct{})
+	if os.Getenv("EXECUTE") == "1" {
+		startHttpServer(grpcServerStarted, make(chan struct{}), "3110")
+		return
+	}
+
+	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash")
+	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
+	blockingErr := blockingcmd.Start()
+	require.Nil(t, blockingErr)
+
+	time.Sleep(time.Second * 5)
+
+	cmd := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Run()
 	require.NotNil(t, err)
