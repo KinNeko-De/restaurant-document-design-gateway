@@ -86,11 +86,10 @@ func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	httpServerStarted := make(chan struct{})
 	if os.Getenv("EXECUTE") == "1" {
-		startHttpServer(httpServerStarted, make(chan struct{}), "8080")
+		startHttpServer(httpServerStarted, make(chan struct{}), ":8080")
 		return
 	}
 
-	startHttpServer(httpServerStarted, make(chan struct{}), "8080")
 	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
@@ -111,7 +110,7 @@ func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) 
 func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	grpcServerStarted := make(chan struct{})
 	if os.Getenv("EXECUTE") == "1" {
-		startHttpServer(grpcServerStarted, make(chan struct{}), "3110")
+		startHttpServer(grpcServerStarted, make(chan struct{}), ":3110")
 		return
 	}
 
