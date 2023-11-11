@@ -89,9 +89,10 @@ func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 // panic: test timed out after 5m0s
 // running tests:
 // TestMain_ApplicationListenToInterrupt_GracefullShutdown (5m0s)
-func TestMain_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
+func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
+	httpServerStarted := make(chan struct{})
 	if os.Getenv("EXECUTE") == "1" {
-		main()
+		startHttpServer(httpServerStarted, make(chan struct{}), "3110")
 		return
 	}
 
@@ -99,17 +100,13 @@ func TestMain_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	t.Setenv(document.PortEnv, "8080")
 	t.Setenv(oauth.ClientIdEnv, "1234567890")
 	t.Setenv(oauth.ClientSecretEnv, "1234567890")
-	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_ProcessAlreadyListenToPort_AppCrash")
+	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
 	require.Nil(t, blockingErr)
 
-	serviceToCheck := "readiness" // wait until the service is ready
-	expectedStatus := healthV1.HealthCheckResponse_SERVING
-	_, healthError := waitForStatus(t, serviceToCheck, expectedStatus)
-	require.Nil(t, healthError)
-
-	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ProcessAlreadyListenToPort_AppCrash")
+	<-httpServerStarted
+	cmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Run()
 	require.NotNil(t, err)
@@ -177,8 +174,8 @@ func waitForStatus(t *testing.T, serviceToCheck string, expectedStatus healthV1.
 
 	client := healthV1.NewHealthClient(conn)
 	count := 0
-	const iterations = 200
-	const interval = time.Millisecond * 10
+	const iterations = 50
+	const interval = time.Millisecond * 100
 	var healthResponse *healthV1.HealthCheckResponse
 	var err error
 	for count < iterations {
