@@ -14,6 +14,7 @@ import (
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/health"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/router"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -23,7 +24,7 @@ import (
 )
 
 func main() {
-	logger.SetInfoLogLevel()
+	logger.SetLogLevel(zerolog.DebugLevel)
 	logger.Logger.Info().Msg("Starting application.")
 
 	documentServiceConfigError := document.ReadConfig()
@@ -43,7 +44,7 @@ func main() {
 	grpcServerStarted := make(chan struct{})
 	grpcServerStopped := make(chan struct{})
 	go startHttpServer(httpServerStarted, httpServerStopped, ":8080")
-	go startGrpcServer(grpcServerStarted, grpcServerStopped, "3110")
+	go startGrpcServer(grpcServerStarted, grpcServerStopped, ":3110")
 
 	<-grpcServerStarted
 	<-httpServerStarted
@@ -79,7 +80,7 @@ func startHttpServer(httpServerStarted chan struct{}, httpServerStopped chan str
 }
 
 func startGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan struct{}, port string) {
-	listener, err := net.Listen("tcp", ":"+port)
+	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		logger.Logger.Error().Err(err).Msgf("Failed to listen on port %v", port)
 		os.Exit(51)

@@ -98,7 +98,7 @@ func TestMain_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
 	require.Nil(t, blockingErr)
-	time.Sleep(1 * time.Second) // give the service some time to start
+	time.Sleep(5 * time.Second) // give the service some time to start
 	cmd := exec.Command(os.Args[0], "-test.run=TestMain_ProcessAlreadyListenToPort_AppCrash")
 	cmd.Env = append(os.Environ(), "EXECUTE=1")
 	err := cmd.Run()
@@ -197,4 +197,18 @@ func TestMain_StartGrpcServer_PortMalformed(t *testing.T) {
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
 	assert.Equal(t, 51, exitCode)
+}
+
+func TestMain_StartHttpServer_PortMalformed(t *testing.T) {
+	if os.Getenv("EXECUTE") == "1" {
+		startGrpcServer(make(chan struct{}), make(chan struct{}), "malformedPort")
+		return
+	}
+
+	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_PortMalformed")
+	runningApp.Env = append(os.Environ(), "EXECUTE=1")
+	err := runningApp.Run()
+	require.NotNil(t, err)
+	exitCode := err.(*exec.ExitError).ExitCode()
+	assert.Equal(t, 50, exitCode)
 }
