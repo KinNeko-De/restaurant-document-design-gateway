@@ -1,20 +1,17 @@
 package main
 
 import (
-	"context"
-	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/health"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/router"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server"
 )
 
 func main() {
-	logger.SetInfoLogLevel()
+	logger.SetLogLevel(logger.LogLevel)
 	logger.Logger.Info().Msg("Starting application.")
 
 	documentServiceConfigError := document.ReadConfig()
@@ -29,32 +26,19 @@ func main() {
 		os.Exit(41)
 	}
 
-	httpServerStop := make(chan struct{})
-	go startHttpServer(httpServerStop, ":8080")
+	httpServerStarted := make(chan struct{})
+	httpServerStopped := make(chan struct{})
+	grpcServerStarted := make(chan struct{})
+	grpcServerStopped := make(chan struct{})
+	go server.StartHttpServer(httpServerStarted, httpServerStopped, ":8080")
+	go server.StartGrpcServer(grpcServerStarted, grpcServerStopped, ":3110")
 
-	<-httpServerStop
+	<-grpcServerStarted
+	<-httpServerStarted
+	health.Ready()
+
+	<-grpcServerStopped
+	<-httpServerStopped
 	logger.Logger.Info().Msg("Application stopped.")
 	os.Exit(0)
-}
-
-func startHttpServer(httpServerStop chan struct{}, port string) {
-	router := router.SetupRouter()
-	var gracefulStop = make(chan os.Signal, 1)
-	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
-	logger.Logger.Debug().Msg("starting http server")
-
-	server := &http.Server{Addr: port, Handler: router}
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Logger.Error().Err(err).Msg("Failed to start http server")
-			os.Exit(50)
-		}
-	}()
-
-	stop := <-gracefulStop
-	if err := server.Shutdown(context.Background()); err != nil {
-		logger.Logger.Error().Err(err).Msg("Failed to shutdown http server")
-	}
-	logger.Logger.Debug().Msgf("http server stopped. Received signal %s", stop)
-	close(httpServerStop)
 }
