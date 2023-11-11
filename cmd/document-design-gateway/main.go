@@ -8,11 +8,10 @@ import (
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/health"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server"
-	"github.com/rs/zerolog"
 )
 
 func main() {
-	logger.SetLogLevel(zerolog.InfoLevel)
+	logger.SetLogLevel(logger.LogLevel)
 	logger.Logger.Info().Msg("Starting application.")
 
 	documentServiceConfigError := document.ReadConfig()
