@@ -21,7 +21,7 @@ func StartGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan str
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		logger.Logger.Error().Err(err).Msgf("Failed to listen on port %v", port)
-		os.Exit(51)
+		os.Exit(50)
 	}
 
 	grpcServer := configureGrpcServer()
@@ -36,7 +36,7 @@ func StartGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan str
 	go func() {
 		if err := grpcServer.Serve(listener); err != nil {
 			logger.Logger.Error().Err(err).Msg("failed to serve grpc server")
-			os.Exit(52)
+			os.Exit(51)
 		}
 	}()
 	close(grpcServerStarted)

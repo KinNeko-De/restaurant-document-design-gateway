@@ -29,7 +29,7 @@ func TestStartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	err := cmd.Run()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 50, exitCode)
+	assert.Equal(t, 52, exitCode)
 
 }
 
@@ -44,5 +44,5 @@ func TestStartHttpServer_PortMalformed(t *testing.T) {
 	err := runningApp.Run()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 50, exitCode)
+	assert.Equal(t, 52, exitCode)
 }
