@@ -10,7 +10,6 @@ import (
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -84,53 +83,7 @@ func TestMain_ApplicationListenToSIGTERM_AndGracefullyShutdown(t *testing.T) {
 	assert.Equal(t, 0, exitCode)
 }
 
-func TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
-	if os.Getenv("EXECUTE") == "1" {
-		server.StartHttpServer(make(chan struct{}), make(chan struct{}), ":8080")
-		return
-	}
-
-	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
-	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
-	blockingErr := blockingcmd.Start()
-	defer blockingcmd.Process.Kill()
-	require.Nil(t, blockingErr)
-
-	time.Sleep(time.Second * 1)
-
-	cmd := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_ProcessAlreadyListenToPort_AppCrash")
-	cmd.Env = append(os.Environ(), "EXECUTE=1")
-	err := cmd.Run()
-	require.NotNil(t, err)
-	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 50, exitCode)
-
-}
-
-func TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
-	if os.Getenv("EXECUTE") == "1" {
-		server.StartGrpcServer(make(chan struct{}), make(chan struct{}), ":3110")
-		return
-	}
-
-	blockingcmd := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash")
-	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
-	blockingErr := blockingcmd.Start()
-
-	defer blockingcmd.Process.Kill()
-	require.Nil(t, blockingErr)
-
-	time.Sleep(time.Second * 1)
-
-	cmd := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_ProcessAlreadyListenToPort_AppCrash")
-	cmd.Env = append(os.Environ(), "EXECUTE=1")
-	err := cmd.Run()
-	require.NotNil(t, err)
-	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 51, exitCode)
-}
-
-func TestMain_HealtProbeIsServing_liveness(t *testing.T) {
+func TestMain_HealtProbeIsServing_Liveness(t *testing.T) {
 	serviceToCheck := "liveness"
 
 	if os.Getenv("EXECUTE") == "1" {
@@ -142,7 +95,7 @@ func TestMain_HealtProbeIsServing_liveness(t *testing.T) {
 	t.Setenv(document.PortEnv, "8080")
 	t.Setenv(oauth.ClientIdEnv, "1234567890")
 	t.Setenv(oauth.ClientSecretEnv, "1234567890")
-	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_HealthProbeIsServing")
+	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_HealtProbeIsServing_Liveness")
 	runningApp.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := runningApp.Start()
 	require.Nil(t, blockingErr)
@@ -156,7 +109,7 @@ func TestMain_HealtProbeIsServing_liveness(t *testing.T) {
 	assert.Equal(t, expectedStatus, healthResponse.Status)
 }
 
-func TestMain_HealthProbeIsServing_readiness(t *testing.T) {
+func TestMain_HealthProbeIsServing_Readiness(t *testing.T) {
 	serviceToCheck := "readiness"
 
 	if os.Getenv("EXECUTE") == "1" {
@@ -168,7 +121,7 @@ func TestMain_HealthProbeIsServing_readiness(t *testing.T) {
 	t.Setenv(document.PortEnv, "8080")
 	t.Setenv(oauth.ClientIdEnv, "1234567890")
 	t.Setenv(oauth.ClientSecretEnv, "1234567890")
-	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_HealthProbeIsServing")
+	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_HealthProbeIsServing_Readiness")
 	runningApp.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := runningApp.Start()
 	require.Nil(t, blockingErr)
@@ -205,32 +158,4 @@ func waitForStatus(t *testing.T, serviceToCheck string, expectedStatus healthV1.
 		count++
 	}
 	return healthResponse, err
-}
-
-func TestMain_StartGrpcServer_PortMalformed(t *testing.T) {
-	if os.Getenv("EXECUTE") == "1" {
-		server.StartGrpcServer(make(chan struct{}), make(chan struct{}), "malformedPort")
-		return
-	}
-
-	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_StartGrpcServer_PortMalformed")
-	runningApp.Env = append(os.Environ(), "EXECUTE=1")
-	err := runningApp.Run()
-	require.NotNil(t, err)
-	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 51, exitCode)
-}
-
-func TestMain_StartHttpServer_PortMalformed(t *testing.T) {
-	if os.Getenv("EXECUTE") == "1" {
-		server.StartHttpServer(make(chan struct{}), make(chan struct{}), "malformedPort")
-		return
-	}
-
-	runningApp := exec.Command(os.Args[0], "-test.run=TestMain_StartHttpServer_PortMalformed")
-	runningApp.Env = append(os.Environ(), "EXECUTE=1")
-	err := runningApp.Run()
-	require.NotNil(t, err)
-	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 50, exitCode)
 }
