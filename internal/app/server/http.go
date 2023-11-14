@@ -21,7 +21,7 @@ func StartHttpServer(httpServerStarted chan struct{}, httpServerStopped chan str
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Logger.Error().Err(err).Msg("Failed to start http server")
-			os.Exit(50)
+			os.Exit(52)
 		}
 	}()
 	close(httpServerStarted)

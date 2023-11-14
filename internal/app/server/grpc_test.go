@@ -20,8 +20,8 @@ func TestStartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
 
-	defer blockingcmd.Process.Kill()
 	require.Nil(t, blockingErr)
+	defer blockingcmd.Process.Kill()
 
 	time.Sleep(time.Second * 1)
 
@@ -30,7 +30,7 @@ func TestStartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	err := cmd.Run()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 51, exitCode)
+	assert.Equal(t, 50, exitCode)
 }
 
 func TestStartGrpcServer_PortMalformed(t *testing.T) {
@@ -44,5 +44,5 @@ func TestStartGrpcServer_PortMalformed(t *testing.T) {
 	err := runningApp.Run()
 	require.NotNil(t, err)
 	exitCode := err.(*exec.ExitError).ExitCode()
-	assert.Equal(t, 51, exitCode)
+	assert.Equal(t, 50, exitCode)
 }
