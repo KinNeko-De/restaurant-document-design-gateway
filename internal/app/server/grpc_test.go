@@ -20,8 +20,8 @@ func TestStartGrpcServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
 
-	defer blockingcmd.Process.Kill()
 	require.Nil(t, blockingErr)
+	defer blockingcmd.Process.Kill()
 
 	time.Sleep(time.Second * 1)
 

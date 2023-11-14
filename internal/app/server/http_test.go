@@ -19,8 +19,8 @@ func TestStartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	blockingcmd := exec.Command(os.Args[0], "-test.run=TestStartHttpServer_ProcessAlreadyListenToPort_AppCrash")
 	blockingcmd.Env = append(os.Environ(), "EXECUTE=1")
 	blockingErr := blockingcmd.Start()
-	defer blockingcmd.Process.Kill()
 	require.Nil(t, blockingErr)
+	defer blockingcmd.Process.Kill()
 
 	time.Sleep(time.Second * 1)
 
