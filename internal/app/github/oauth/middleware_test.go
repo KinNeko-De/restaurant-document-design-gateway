@@ -3,6 +3,8 @@ package oauth
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"regexp"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -10,18 +12,27 @@ import (
 )
 
 func TestGithubOAuth_NoOAuthParameter_RedirectToGithub(t *testing.T) {
+	expectedClientId := "12345675"
+	t.Setenv(ClientIdEnv, expectedClientId)
+	t.Setenv(ClientSecretEnv, "12345")
+	ReadConfig()
+
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
 
 	requestedUri := "http://localhost:8080/document/preview/demo"
+	expectedRequestedUri := url.QueryEscape(requestedUri)
+	expectedGithubOAuthUri := "https://github.com/login/oauth/authorize?"
+	expectedRedirectUri := regexp.QuoteMeta(expectedGithubOAuthUri) + "client_id=" + expectedClientId + "&redirect_uri=" + expectedRequestedUri + "&response_type=code&state=[a-z0-9]{32}"
 	req, _ := http.NewRequest(http.MethodGet, requestedUri, nil)
 	ctx.Request = req
 
 	GithubOAuth()(ctx)
 
-	assert.Equal(t, http.StatusTemporaryRedirect, w.Code, "expected status Temporary Redirect; got %v", w.Code)
+	assert.Equal(t, http.StatusTemporaryRedirect, w.Code)
 	url := w.Header().Get("Location")
-	assert.Contains(t, url, requestedUri, "expected Location header to be set")
+
+	assert.Regexp(t, regexp.MustCompile(expectedRedirectUri), url)
 }
 
 /*
