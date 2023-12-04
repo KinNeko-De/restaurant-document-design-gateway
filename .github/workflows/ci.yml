@@ -5,7 +5,7 @@ on:
       - 'documentation/**'
 
 env:
-  MAJOR_MINOR_PATCH: 0.3.0
+  MAJOR_MINOR_PATCH: 0.6.0
   GIN_MODE: release
   MAIN_PACKAGE: 'cmd/document-design-gateway/main.go'
 
@@ -72,13 +72,16 @@ jobs:
           go build -o bin/app ./${{ env.MAIN_PACKAGE }}
       - name: "Test"
         run: |
-          go test ./... -race -coverprofile=coverage.out -timeout 5m
+          go test ./... -race -coverpkg=all -coverprofile=coverage.out -timeout 5m
       - name: "Exclude codecoverage"
         run: |
           grep -v -E -f .covignore coverage.out > coverage.filtered.out
           mv coverage.filtered.out coverage.out
       - name: "Code coverage"
         uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
       - name: "Build artifacts"
         uses: docker/build-push-action@v4
         with:

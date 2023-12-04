@@ -11,6 +11,9 @@
           "env": {
             "DOCUMENTGENERATESERVICE_HOST" : "localhost",
             "DOCUMENTGENERATESERVICE_PORT" : "42984",
+            "GITHUBOAUTH_CLIENTID" : "555b51541211ad2920da", // you can use your own github oauth client id because this is my github oauth client id
+            "GITHUBOAUTH_CLIENTSECRET" : "b8ea04669ded3c146e5c7e43aecb26ba133f7d32", // do not use this too much as there is a limit for github oauth requests
+            // I may revoke all user tokens at any time
           }
       },
       {
@@ -20,6 +23,7 @@
         "mode": "debug",
         "program": "${workspaceFolder}/cmd/document-design-gateway/main.go",
         "showLog": true,
+        "console": "integratedTerminal",
         "env": {
           "DOCUMENTGENERATESERVICE_HOST" : "localhost",
           "DOCUMENTGENERATESERVICE_PORT" : "3110",

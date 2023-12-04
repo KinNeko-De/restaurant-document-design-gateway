@@ -1,4 +1,4 @@
-package operation
+package logger
 
 import (
 	"os"
@@ -7,17 +7,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
-var Logger zerolog.Logger = zerolog.New(os.Stdout).
-	With().
+const LogLevel = zerolog.InfoLevel
+
+var Logger zerolog.Logger = zerolog.New(os.Stdout).With().
 	Timestamp().
 	Caller().
 	Str("version", build.Version).
 	Logger()
 
-func SetDefaultLoggingLevel() {
-	SetLoggingLevel(zerolog.DebugLevel)
-}
-
-func SetLoggingLevel(level zerolog.Level) {
+func SetLogLevel(level zerolog.Level) {
 	zerolog.SetGlobalLevel(level)
 }

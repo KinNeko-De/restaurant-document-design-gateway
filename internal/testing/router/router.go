@@ -1,4 +1,4 @@
-package testings
+package router
 
 import (
 	"net/http"

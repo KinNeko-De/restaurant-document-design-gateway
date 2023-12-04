@@ -1,53 +1,44 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"os"
+
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/document"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/health"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server"
 )
 
 func main() {
-	operation.SetDefaultLoggingLevel()
+	logger.SetLogLevel(logger.LogLevel)
+	logger.Logger.Info().Msg("Starting application.")
 
 	documentServiceConfigError := document.ReadConfig()
 	if documentServiceConfigError != nil {
-		operation.Logger.Fatal().Err(documentServiceConfigError).Msg("Failed to read document service config")
+		logger.Logger.Error().Err(documentServiceConfigError).Msg("Failed to read document service config")
+		os.Exit(40)
 	}
 
 	oauthConfigError := oauth.ReadConfig()
 	if oauthConfigError != nil {
-		operation.Logger.Fatal().Err(oauthConfigError).Msg("Failed to read github oauth config")
+		logger.Logger.Error().Err(oauthConfigError).Msg("Failed to read github oauth config")
+		os.Exit(41)
 	}
 
-	StartHttpServer()
-}
+	httpServerStarted := make(chan struct{})
+	httpServerStopped := make(chan struct{})
+	grpcServerStarted := make(chan struct{})
+	grpcServerStopped := make(chan struct{})
+	go server.StartHttpServer(httpServerStarted, httpServerStopped, ":8080")
+	go server.StartGrpcServer(grpcServerStarted, grpcServerStopped, ":3110")
 
-func StartHttpServer() {
-	router := setupRouter()
+	<-grpcServerStarted
+	<-httpServerStarted
+	health.Ready()
 
-	err := router.Run(":8080")
-	if err != nil {
-		operation.Logger.Fatal().Err(err).Msg("Failed to start http server")
-	}
-}
-
-func setupRouter() *gin.Engine {
-	router := createRouter()
-	configRoutes(router)
-	return router
-}
-
-func createRouter() *gin.Engine {
-	router := gin.New()
-	router.Use(operation.GinLogger())
-	router.Use(gin.Recovery())
-	return router
-}
-
-func configRoutes(router *gin.Engine) {
-	authorized := router.Group("/")
-	authorized.Use(oauth.GithubOAuth())
-	authorized.GET("/document/preview/demo", document.GeneratePreviewDemo)
-	authorized.POST("/document/preview", document.GeneratePreview)
+	<-grpcServerStopped
+	<-httpServerStopped
+	logger.Logger.Info().Msg("Application stopped.")
+	os.Exit(0)
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/github"
 	"github.com/google/uuid"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
 	"golang.org/x/oauth2"
 	oauthgithub "golang.org/x/oauth2/github"
 )
@@ -34,16 +34,15 @@ func GithubOAuth() gin.HandlerFunc {
 		if state == "" || code == "" {
 			redirectToGithubOAuth(ctx)
 			return
+		} else {
+			err := writeUserIdToContext(ctx, state, code)
+			if err != nil {
+				logger.Logger.Error().Err(err).Msg("Failed to write user id to context")
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user can not be unauthorized. refresh the page without code and state"})
+				return
+			}
+			ctx.Next()
 		}
-
-		err := writeUserIdToContext(ctx, state, code)
-		if err != nil {
-			operation.Logger.Error().Err(err).Msg("Failed to write user id to context")
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user can not be unauthorized. refresh the page without code and state"})
-			return
-		}
-
-		ctx.Next()
 	}
 }
 
@@ -112,7 +111,7 @@ func getUserId(ctx *gin.Context, state string, code string) (string, error) {
 		return "", fmt.Errorf("client.Users.Get() faled with '%s'", err.Error())
 	}
 
-	operation.Logger.Debug().Msgf("User ID: %d, User: %s", *user.ID, user.String())
+	logger.Logger.Debug().Msgf("User ID: %d, User: %s", *user.ID, user.String())
 	return strconv.FormatInt(*user.ID, 10), nil
 }
 
