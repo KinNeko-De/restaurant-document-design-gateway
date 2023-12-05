@@ -22,7 +22,10 @@ func createRouter() *gin.Engine {
 
 func configRoutes(router *gin.Engine) {
 	authorized := router.Group("/")
-	authorized.Use(oauth.GithubOAuth())
+	authorized.Use(func(ctx *gin.Context) {
+		config := oauth.CreateOAuthFunc(ctx)
+		oauth.GithubOAuth(config)(ctx)
+	})
 	authorized.GET("/document/preview/demo", document.GeneratePreviewDemo)
 	authorized.POST("/document/preview", document.GeneratePreview)
 }
