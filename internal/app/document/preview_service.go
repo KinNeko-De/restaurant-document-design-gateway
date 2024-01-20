@@ -17,7 +17,6 @@ import (
 	apiProtobuf "github.com/kinneko-de/api-contract/golang/kinnekode/protobuf"
 	apiRestaurantDocument "github.com/kinneko-de/api-contract/golang/kinnekode/restaurant/document/v1"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
-	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/timeout"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
 	"golang.org/x/time/rate"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -27,6 +26,8 @@ var (
 	documentServiceGateway DocumentServiceGateway = DocumentServiceGateKeeper{}
 	rateLimiters           sync.Map
 )
+
+const FileDownloadTimeout = time.Duration(10 * time.Minute)
 
 type GeneratePreviewRequest struct {
 }
@@ -83,7 +84,7 @@ func generatePreview(ctx *gin.Context, previewRequest *apiRestaurantDocument.Gen
 		return err
 	}
 
-	callContext, cancelFunc := context.WithDeadline(context.Background(), timeout.GetDeadline(timeout.LongDeadline))
+	callContext, cancelFunc := context.WithTimeout(context.Background(), FileDownloadTimeout)
 	defer cancelFunc()
 	stream, err := client.GeneratePreview(callContext, previewRequest)
 	if err != nil {
