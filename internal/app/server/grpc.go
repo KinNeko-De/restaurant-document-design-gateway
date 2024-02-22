@@ -16,10 +16,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func StartGrpcServer(grpcServerStopped chan struct{}, grpcServerStarted chan struct{}) {
+func StartGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan struct{}) {
 	port := ":3110" // todo load from env, move os.exit up to here and refactor tests
 
-	startGrpcServer(grpcServerStopped, grpcServerStarted, port)
+	startGrpcServer(grpcServerStarted, grpcServerStopped, port)
 }
 
 func startGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan struct{}, port string) {
