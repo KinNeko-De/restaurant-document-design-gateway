@@ -27,4 +27,4 @@ Tests need to be maintained as normal code. Keep that in mind while you write te
 # Rate limit for access for demonstration
 As it is planned to provide a public demonstration, a github account is needed to access the endpoints. Each github account can generate up to three document every hour.
 
-The application needs access to your github user id because of that.
+The application needs access to your github user email to identify you.

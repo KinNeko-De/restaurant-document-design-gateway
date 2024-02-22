@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"path"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -21,6 +20,9 @@ import (
 var (
 	cache sync.Map
 )
+
+const emailScope = "user:email"
+const UserContextKey = "userId"
 
 func GithubOAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -46,7 +48,7 @@ func redirectToGithubOAuth(ctx *gin.Context) {
 		RedirectURL:  getRedirectUrl(ctx),
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
-		Scopes:       []string{},
+		Scopes:       []string{emailScope},
 		Endpoint:     oauthgithub.Endpoint,
 	}
 	oauthStateString := strings.ReplaceAll(uuid.New().String(), "-", "")
@@ -65,15 +67,15 @@ func getRedirectUrl(ctx *gin.Context) string {
 }
 
 func writeUserIdToContext(ctx *gin.Context, state string, code string) error {
-	userId, err := getUserId(ctx, state, code)
+	userEmail, err := getUserEmail(ctx, state, code)
 	if err != nil {
 		return err
 	}
-	ctx.Set("userId", userId)
+	ctx.Set(UserContextKey, userEmail)
 	return nil
 }
 
-func getUserId(ctx *gin.Context, state string, code string) (string, error) {
+func getUserEmail(ctx *gin.Context, state string, code string) (string, error) {
 	value, loaded := cache.LoadAndDelete(state)
 	if !loaded {
 		return "", fmt.Errorf("state can not be loaded: %s", state)
@@ -85,7 +87,7 @@ func getUserId(ctx *gin.Context, state string, code string) (string, error) {
 	githubOauthConfig := &oauth2.Config{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
-		Scopes:       []string{},
+		Scopes:       []string{emailScope},
 		Endpoint:     oauthgithub.Endpoint,
 	}
 	token, err := githubOauthConfig.Exchange(context.Background(), code)
@@ -105,8 +107,8 @@ func getUserId(ctx *gin.Context, state string, code string) (string, error) {
 		return "", fmt.Errorf("client.Users.Get() faled with '%s'", err.Error())
 	}
 
-	logger.Logger.Debug().Msgf("User ID: %d, User: %s", *user.ID, user.String())
-	return strconv.FormatInt(*user.ID, 10), nil
+	logger.Logger.Debug().Msgf("User Email: %s", user.GetEmail())
+	return user.GetEmail(), nil
 }
 
 type TokenSource struct {
