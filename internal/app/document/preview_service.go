@@ -20,6 +20,8 @@ import (
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/httpheader"
 	"golang.org/x/time/rate"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	github "github.com/kinneko-de/restaurant-document-design-gateway/internal/app/github/oauth"
 )
 
 var (
@@ -46,13 +48,15 @@ func GeneratePreviewDemo(ctx *gin.Context) {
 }
 
 func tryToGeneratePreview(ctx *gin.Context) {
-	userId := ctx.Keys["userId"]
-	if userId == nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user id is not set"})
+	UserContextKeyValue := ctx.Keys[github.UserContextKey]
+	if UserContextKeyValue == nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "user email is not set"})
 		return
 	}
-	if requestIsLimited(userId.(string)) {
-		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded. try again later"})
+	userEmail := UserContextKeyValue.(string)
+
+	if requestIsLimited(userEmail) {
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"error": fmt.Sprintf("rate limit for %s exceeded. try again later", userEmail)})
 		return
 	}
 
