@@ -16,7 +16,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func StartGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan struct{}, port string) {
+func StartGrpcServer(grpcServerStopped chan struct{}, grpcServerStarted chan struct{}) {
+	port := ":3110" // todo load from env, move os.exit up to here and refactor tests
+
+	startGrpcServer(grpcServerStopped, grpcServerStarted, port)
+}
+
+func startGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan struct{}, port string) {
 	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		logger.Logger.Error().Err(err).Msgf("Failed to listen on port %v", port)
