@@ -13,7 +13,7 @@ import (
 func StartHttpServer(httpServerStarted chan struct{}, httpServerStopped chan struct{}) {
 	port := ":8080" // todo load from env, move os.exit up to here and refactor tests
 
-	startGrpcServer(httpServerStarted, httpServerStopped, port)
+	startHttpServer(httpServerStarted, httpServerStopped, port)
 }
 
 func startHttpServer(httpServerStarted chan struct{}, httpServerStopped chan struct{}, port string) {
