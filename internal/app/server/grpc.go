@@ -3,12 +3,11 @@ package server
 import (
 	"net"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/health"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server/shutdown"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -29,8 +28,7 @@ func StartGrpcServer(grpcServerStarted chan struct{}, grpcServerStopped chan str
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthServer)
 	health.Initialize(healthServer)
 
-	var gracefulStop = make(chan os.Signal, 1)
-	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
+	var gracefulStop = shutdown.CreateGracefulStop()
 	logger.Logger.Debug().Msg("starting grpc server")
 
 	go func() {

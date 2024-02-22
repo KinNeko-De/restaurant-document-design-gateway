@@ -4,17 +4,15 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/operation/logger"
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/router"
+	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server/shutdown"
 )
 
 func StartHttpServer(httpServerStarted chan struct{}, httpServerStopped chan struct{}, port string) {
 	router := router.SetupRouter()
-	var gracefulStop = make(chan os.Signal, 1)
-	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
+	var gracefulStop = shutdown.CreateGracefulStop()
 	logger.Logger.Debug().Msg("starting http server")
 
 	server := &http.Server{Addr: port, Handler: router}
