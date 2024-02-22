@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git fetch --prune
+git fetch --prune --prune-tags
 
 existingfeaturebranches=$(git branch -r | sed 's/^ *//;s/ *$//' | egrep -v "(^\*|main)")
 echo "Existing feature branches: $existingfeaturebranches"
@@ -22,4 +22,4 @@ do
   fi
 done
 
-read -p "Press any key to end."
+read -p "Press any key to end ..."
