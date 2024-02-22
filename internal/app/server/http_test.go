@@ -12,7 +12,7 @@ import (
 
 func TestStartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		StartHttpServer(make(chan struct{}), make(chan struct{}), ":8080")
+		startHttpServer(make(chan struct{}), make(chan struct{}), ":8081")
 		return
 	}
 
@@ -33,9 +33,9 @@ func TestStartHttpServer_ProcessAlreadyListenToPort_AppCrash(t *testing.T) {
 
 }
 
-func TestStartHttpServer_PortMalformed(t *testing.T) {
+func TestStartHttpServer_PortMalformed_AppCrash(t *testing.T) {
 	if os.Getenv("EXECUTE") == "1" {
-		StartHttpServer(make(chan struct{}), make(chan struct{}), "malformedPort")
+		startHttpServer(make(chan struct{}), make(chan struct{}), "malformedPort")
 		return
 	}
 

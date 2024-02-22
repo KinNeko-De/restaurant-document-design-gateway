@@ -10,7 +10,13 @@ import (
 	"github.com/kinneko-de/restaurant-document-design-gateway/internal/app/server/shutdown"
 )
 
-func StartHttpServer(httpServerStarted chan struct{}, httpServerStopped chan struct{}, port string) {
+func StartHttpServer(httpServerStarted chan struct{}, httpServerStopped chan struct{}) {
+	port := ":8080" // todo load from env, move os.exit up to here and refactor tests
+
+	startGrpcServer(httpServerStarted, httpServerStopped, port)
+}
+
+func startHttpServer(httpServerStarted chan struct{}, httpServerStopped chan struct{}, port string) {
 	router := router.SetupRouter()
 	var gracefulStop = shutdown.CreateGracefulStop()
 	logger.Logger.Debug().Msg("starting http server")
