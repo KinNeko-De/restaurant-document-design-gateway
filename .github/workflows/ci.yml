@@ -7,7 +7,7 @@ on:
 env:
   MAJOR: 0
   MINOR: 9
-  PATCH: 0
+  PATCH: 1
   GIN_MODE: release
   MAIN_PACKAGE: 'cmd/document-design-gateway/main.go'
 
