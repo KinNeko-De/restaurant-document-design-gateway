@@ -21,7 +21,7 @@
 go.work
 
 # test path for build ci
-bin
+bin/**/*
 
 # Downloaded mockery generator
 tools/mockery/windows_x86_64*
