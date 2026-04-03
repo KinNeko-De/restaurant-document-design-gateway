@@ -106,3 +106,6 @@ jobs:
               ref: "refs/tags/${{steps.prepare_tag.outputs.git_tag }}",
               sha: context.sha
             })
+      - name: Delete Git Tags With my action
+        uses: KinNeko-De/cleanup-outdated-tag-action@v0
+        if: github.ref == 'refs/heads/main'
