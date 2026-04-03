@@ -22,7 +22,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -82,13 +82,13 @@ jobs:
           mv coverage.filtered.out coverage.out
 
       - name: "Code coverage"
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
       - name: "Build artifacts"
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./build/dockerfile
